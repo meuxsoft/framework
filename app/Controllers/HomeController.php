@@ -28,8 +28,8 @@ class HomeController extends Controller
      */
     public function login()
     {
-        // 2. Özel Layout kullanımı ($this->setLayout('auth') veya $this->view('auth.login', $data, 'auth')):
-        return $this->setLayout('auth')->view('auth.login', [
+        // 2. Özel Layout kullanımı ($this->layout('auth') veya $this->view('auth.login', $data, 'auth')):
+        return $this->layout('auth')->view('auth.login', [
             'title' => 'Giriş Yap - ' . config('app.name')
         ]);
     }

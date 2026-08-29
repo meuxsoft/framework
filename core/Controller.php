@@ -20,7 +20,7 @@ class Controller
      * @param string|null $layout Layout name (e.g. 'main', 'auth', 'admin') or null for no layout
      * @return $this
      */
-    protected function setLayout(?string $layout)
+    protected function layout(?string $layout)
     {
         $this->layout = $layout;
         return $this;
