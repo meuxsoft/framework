@@ -176,6 +176,8 @@ class Router
 
     protected static function resolveControllerClass($controllerName)
     {
+        $controllerName = str_replace('/', '\\', $controllerName);
+
         if (strpos($controllerName, '\\') === 0) {
             return ltrim($controllerName, '\\');
         }
