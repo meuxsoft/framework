@@ -6,10 +6,10 @@ return [
     | Application Name & Environment
     |--------------------------------------------------------------------------
     */
-    'name'     => 'PHP 7.3 Static MVC',
+    'name'     => 'Meuxsoft Framework',
     'env'      => 'development', // 'development' or 'production'
     'debug'    => true,
-    'url'      => 'https://localhost',
+    'url'      => 'http://localhost',
     'timezone' => 'Europe/Istanbul',
     'charset'  => 'UTF-8',
 
@@ -17,11 +17,9 @@ return [
     |--------------------------------------------------------------------------
     | Active Modules
     |--------------------------------------------------------------------------
-    | Modules registered automatically on application startup.
+    | Register modules located under app/Modules/ (e.g. ['Auth', 'Admin'])
     */
-    'modules'  => [
-        'Product',
-    ],
+    'modules'  => [],
 
     /*
     |--------------------------------------------------------------------------
