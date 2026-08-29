@@ -7,10 +7,30 @@ use RuntimeException;
 class Layout
 {
     /**
-     * Prevent instantiation.
+     * @var string
      */
-    private function __construct()
+    protected $viewContent = '';
+
+    /**
+     * @var array
+     */
+    protected $viewData = [];
+
+    /**
+     * Prevent direct public instantiation.
+     */
+    protected function __construct()
     {
+    }
+
+    /**
+     * Get rendered view content inside layout ($this->content()).
+     *
+     * @return string
+     */
+    public function content(): string
+    {
+        return $this->viewContent;
     }
 
     /**
@@ -35,8 +55,23 @@ class Layout
             throw new RuntimeException("Layout file not found: [{$layoutFile}]");
         }
 
-        $mergedData = array_merge($data, ['content' => $content]);
-        extract($mergedData, EXTR_SKIP);
+        $instance = new self();
+        $instance->viewContent = $content;
+        $instance->viewData = $data;
+
+        return $instance->renderLayoutFile($layoutFile, $data);
+    }
+
+    /**
+     * Render layout file within instance scope ($this is bound).
+     *
+     * @param string $layoutFile
+     * @param array $data
+     * @return string
+     */
+    protected function renderLayoutFile(string $layoutFile, array $data): string
+    {
+        extract($data, EXTR_SKIP);
 
         ob_start();
         include $layoutFile;

@@ -25,7 +25,7 @@
 
         <!-- Auth Content Card -->
         <div class="p-8 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-2xl backdrop-blur">
-            <?= $content ?>
+            <?= $this->content() ?>
         </div>
 
         <!-- Back to Home -->

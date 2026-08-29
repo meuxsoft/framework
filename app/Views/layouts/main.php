@@ -62,7 +62,7 @@
 
     <!-- Main Content Area -->
     <main class="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-8">
-        <?= $content ?>
+        <?= $this->content() ?>
     </main>
 
     <!-- Footer -->
