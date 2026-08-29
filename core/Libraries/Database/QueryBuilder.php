@@ -290,8 +290,11 @@ class QueryBuilder
      */
     public function orderBy(string $column, string $direction = 'ASC')
     {
-        $direction = strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC';
-        $this->orders[] = "{$column} {$direction}";
+        $direction = strtoupper(trim($direction)) === 'DESC' ? 'DESC' : 'ASC';
+        $cleanColumn = preg_replace('/[^a-zA-Z0-9_.\`"]/', '', $column);
+        if ($cleanColumn !== '') {
+            $this->orders[] = "{$cleanColumn} {$direction}";
+        }
         return $this;
     }
 
@@ -304,7 +307,10 @@ class QueryBuilder
     public function groupBy(...$columns)
     {
         foreach ($columns as $column) {
-            $this->groups[] = $column;
+            $cleanColumn = preg_replace('/[^a-zA-Z0-9_.\`"]/', '', $column);
+            if ($cleanColumn !== '') {
+                $this->groups[] = $cleanColumn;
+            }
         }
         return $this;
     }
@@ -560,17 +566,27 @@ class QueryBuilder
             throw new InvalidArgumentException('Cannot insert empty data.');
         }
 
-        $columns = array_keys($data);
+        $cleanColumns = [];
         $placeholders = [];
         $params = [];
+        $i = 0;
 
         foreach ($data as $col => $val) {
-            $param = ':' . preg_replace('/[^a-zA-Z0-9_]/', '', $col);
+            $cleanCol = preg_replace('/[^a-zA-Z0-9_]/', '', $col);
+            if ($cleanCol === '') {
+                continue;
+            }
+            $param = ':ins_' . $i++;
+            $cleanColumns[] = "`{$cleanCol}`";
             $placeholders[] = $param;
             $params[$param] = $val;
         }
 
-        $colsList = implode(', ', $columns);
+        if (empty($cleanColumns)) {
+            throw new InvalidArgumentException('No valid columns provided for insert.');
+        }
+
+        $colsList = implode(', ', $cleanColumns);
         $placeholdersList = implode(', ', $placeholders);
         $sql = "INSERT INTO {$this->table} ({$colsList}) VALUES ({$placeholdersList})";
 
@@ -594,11 +610,20 @@ class QueryBuilder
 
         $setParts = [];
         $params = [];
+        $i = 0;
 
         foreach ($data as $col => $val) {
-            $param = ':u_' . preg_replace('/[^a-zA-Z0-9_]/', '', $col);
-            $setParts[] = "{$col} = {$param}";
+            $cleanCol = preg_replace('/[^a-zA-Z0-9_]/', '', $col);
+            if ($cleanCol === '') {
+                continue;
+            }
+            $param = ':upd_' . $i++;
+            $setParts[] = "`{$cleanCol}` = {$param}";
             $params[$param] = $val;
+        }
+
+        if (empty($setParts)) {
+            return 0;
         }
 
         $sql = "UPDATE {$this->table} SET " . implode(', ', $setParts);

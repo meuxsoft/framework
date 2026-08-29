@@ -9,7 +9,7 @@ return [
     'name'     => 'Meuxsoft Framework',
     'env'      => 'development', // 'development' or 'production'
     'debug'    => true,
-    'url'      => 'http://localhost',
+    'url'      => 'https://localhost',
     'timezone' => 'Europe/Istanbul',
     'charset'  => 'UTF-8',
 

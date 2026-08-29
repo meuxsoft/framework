@@ -197,7 +197,46 @@ class Upload
 
         // Check file extension
         $origName = $file['name'];
+        
+        // Security 1: Null byte injection & Path Traversal in filename
+        if (strpos($origName, "\0") !== false || strpos($origName, '..') !== false) {
+            return [
+                'success' => false,
+                'error'   => 'Güvenlik ihlali: Geçersiz veya tehlikeli dosya adı.',
+                'file'    => null
+            ];
+        }
+
         $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
+
+        // Security 2: Dangerous Executable Extensions Blacklist
+        $dangerousExtensions = [
+            'php', 'php3', 'php4', 'php5', 'php7', 'php8', 'phtml', 'phar', 'pht', 'phps',
+            'shtml', 'cgi', 'pl', 'asp', 'aspx', 'jsp', 'sh', 'bash', 'exe', 'bat', 'cmd',
+            'vbs', 'htaccess', 'htpasswd', 'svg', 'xhtml', 'htm', 'html', 'js', 'jar', 'py'
+        ];
+
+        if (in_array($ext, $dangerousExtensions, true)) {
+            return [
+                'success' => false,
+                'error'   => "Güvenlik Engeli: .{$ext} uzantılı yürütülebilir dosyaların yüklenmesi yasaktır.",
+                'file'    => null
+            ];
+        }
+
+        // Security 3: Double extension detection (e.g., shell.php.jpg)
+        $nameParts = explode('.', $origName);
+        if (count($nameParts) > 2) {
+            foreach ($nameParts as $part) {
+                if (in_array(strtolower($part), $dangerousExtensions, true)) {
+                    return [
+                        'success' => false,
+                        'error'   => "Güvenlik Engeli: Çift uzantılı (.{$part}) zararlı dosya tespit edildi.",
+                        'file'    => null
+                    ];
+                }
+            }
+        }
 
         if (!in_array($ext, $this->allowedTypes, true)) {
             return [
@@ -214,20 +253,21 @@ class Upload
             if (!in_array($mime, $this->allowedMimeTypes[$ext], true)) {
                 return [
                     'success' => false,
-                    'error'   => "Güvenlik uyarısı: Dosya MIME tipi ({$mime}) uzantısıyla uyuşmuyor.",
+                    'error'   => "Güvenlik Uyarısı: Dosya MIME tipi ({$mime}) uzantısıyla uyuşmuyor.",
                     'file'    => null
                 ];
             }
         }
 
-        // Resolve absolute target directory
-        $targetDir = PUBLIC_PATH . '/' . ltrim($this->uploadPath, '/\\');
+        // Security 4: Prevent upload directory traversal
+        $cleanUploadPath = trim(str_replace(['..', "\0"], '', $this->uploadPath), '/\\');
+        $targetDir = PUBLIC_PATH . '/' . $cleanUploadPath;
 
         if (!is_dir($targetDir)) {
             if (!mkdir($targetDir, 0777, true) && !is_dir($targetDir)) {
                 return [
                     'success' => false,
-                    'error'   => "Yükleme dizini oluşturulamadı: {$this->uploadPath}",
+                    'error'   => "Yükleme dizini oluşturulamadı: {$cleanUploadPath}",
                     'file'    => null
                 ];
             }
@@ -244,7 +284,7 @@ class Upload
         }
 
         $destination = $targetDir . '/' . $finalFilename;
-        $relativePath = $this->uploadPath . '/' . $finalFilename;
+        $relativePath = $cleanUploadPath . '/' . $finalFilename;
 
         if (!move_uploaded_file($file['tmp_name'], $destination)) {
             return [

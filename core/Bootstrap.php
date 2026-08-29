@@ -64,6 +64,7 @@ class Bootstrap
         self::registerAutoloader();
         self::loadHelpers();
         self::registerErrorHandlers();
+        self::sendSecurityHeaders();
         self::initEnvironment();
         self::initSession();
         self::checkCsrfProtection();
@@ -310,6 +311,24 @@ HTML;
 </body>
 </html>
 HTML;
+    }
+
+    /**
+     * Send essential HTTP security headers.
+     *
+     * @return void
+     */
+    protected static function sendSecurityHeaders(): void
+    {
+        if (!headers_sent()) {
+            header('X-Frame-Options: SAMEORIGIN');
+            header('X-Content-Type-Options: nosniff');
+            header('X-XSS-Protection: 1; mode=block');
+            header('Referrer-Policy: strict-origin-when-cross-origin');
+            if (function_exists('header_remove')) {
+                header_remove('X-Powered-By');
+            }
+        }
     }
 
     /**

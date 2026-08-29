@@ -61,6 +61,22 @@ class Layout
             throw new RuntimeException("View file not found: [{$viewFile}]");
         }
 
+        // Security: Ensure view file is strictly within allowed directories (LFI prevention)
+        $realViewFile = realpath($viewFile);
+        $realViewsPath = realpath(VIEW_PATH);
+        $realModulesPath = is_dir(MODULES_PATH) ? realpath(MODULES_PATH) : false;
+
+        $isValidPath = false;
+        if ($realViewFile && $realViewsPath && strpos($realViewFile, $realViewsPath) === 0) {
+            $isValidPath = true;
+        } elseif ($realViewFile && $realModulesPath && strpos($realViewFile, $realModulesPath) === 0) {
+            $isValidPath = true;
+        }
+
+        if (!$isValidPath) {
+            throw new RuntimeException("Security Exception: Unauthorized view path access [{$view}]");
+        }
+
         extract($data, EXTR_SKIP);
 
         ob_start();
@@ -76,9 +92,15 @@ class Layout
      */
     public static function resolveViewPath(string $view): string
     {
+        // Security: Prevent Directory Traversal & Null Byte Injection
+        if (strpos($view, '..') !== false || strpos($view, "\0") !== false) {
+            throw new RuntimeException("Security Exception: Directory traversal attempt detected in view name [{$view}]");
+        }
+
         // Check Module syntax: "Module::view.name"
         if (strpos($view, '::') !== false) {
             [$module, $moduleView] = explode('::', $view, 2);
+            $module = preg_replace('/[^a-zA-Z0-9_-]/', '', $module);
             $normalizedView = str_replace('.', '/', $moduleView);
             return MODULES_PATH . '/' . $module . '/Views/' . $normalizedView . '.php';
         }
