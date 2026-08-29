@@ -34,7 +34,8 @@
 
             <nav class="flex items-center gap-4 text-sm font-medium">
                 <a href="<?= url('/') ?>" class="text-slate-300 hover:text-white transition-colors">Ana Sayfa</a>
-                <a href="<?= url('/upload-demo') ?>" class="text-slate-300 hover:text-white transition-colors">Resim Yükleme (Upload)</a>
+                <a href="<?= url('/blog') ?>" class="text-slate-300 hover:text-white transition-colors">Blog (Modül)</a>
+                <a href="<?= url('/upload-demo') ?>" class="text-slate-300 hover:text-white transition-colors">Resim Yükleme</a>
                 <a href="<?= url('/login') ?>" class="text-slate-300 hover:text-white transition-colors">Giriş Yap (Özel Layout)</a>
                 <a href="<?= url('/api/status') ?>" target="_blank" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition border border-slate-700/60 flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
