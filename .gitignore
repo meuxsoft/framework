@@ -1,0 +1,6 @@
+/vendor/
+/composer.phar
+/storage/logs/*.log
+/storage/database.sqlite
+.DS_Store
+Thumbs.db
