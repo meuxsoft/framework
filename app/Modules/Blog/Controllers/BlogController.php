@@ -9,7 +9,8 @@ class BlogController extends Controller
 {
     public function index()
     {
-        return $this->view('Blog::index', [
+        // Doğrudan 'index' yazmanız yeterlidir (Blog/Views/index.php otomatik bulunur):
+        return $this->view('index', [
             'title' => 'Blog Modülü - ' . config('app.name'),
             'posts' => Post::getSamplePosts()
         ]);
@@ -31,7 +32,8 @@ class BlogController extends Controller
             return redirect('/blog');
         }
 
-        return $this->view('Blog::show', [
+        // Doğrudan 'show' yazmanız yeterlidir:
+        return $this->view('show', [
             'title' => $post['title'] . ' - ' . config('app.name'),
             'post'  => $post
         ]);

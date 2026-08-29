@@ -20,6 +20,19 @@ class Controller
     protected function view($view, $data = [], $layout = null)
     {
         $resolvedLayout = $layout !== null ? $layout : $this->layout;
+
+        // Eğer modül controller'ı içindeysek ve view adında '::' yoksa modülün kendi Views klasörüne otomatik bakar
+        if (strpos($view, '::') === false) {
+            $class = get_class($this);
+            if (preg_match('/^App\\\\Modules\\\\([a-zA-Z0-9_]+)\\\\/', $class, $matches)) {
+                $moduleName = $matches[1];
+                $moduleViewFile = MODULES_PATH . '/' . $moduleName . '/Views/' . str_replace('.', '/', $view) . '.php';
+                if (file_exists($moduleViewFile)) {
+                    $view = $moduleName . '::' . $view;
+                }
+            }
+        }
+
         return Layout::render($resolvedLayout, $view, $data);
     }
 
