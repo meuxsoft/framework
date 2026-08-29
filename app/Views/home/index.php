@@ -25,7 +25,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
         <div>
             <div class="flex items-center gap-2.5">
-                <span class="w-2.5 h-2.5 rounded-full <?= $dbConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400' ?>"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                 <h2 class="text-lg font-bold text-white">Örnek Model Kullanımı: <code class="text-indigo-400 font-mono text-base">User::getActiveUsers()</code></h2>
             </div>
             <p class="text-xs text-slate-400 mt-1">Veritabanından <code class="text-slate-300">App\Models\User</code> modeli ile çekilen dinamik veriler:</p>
