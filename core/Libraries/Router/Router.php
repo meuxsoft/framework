@@ -8,6 +8,7 @@ use RuntimeException;
 class Router
 {
     protected static $routes = [];
+    protected static $groupStack = [];
     protected static $notFoundHandler = null;
     protected static $methodNotAllowedHandler = null;
 
@@ -15,16 +16,48 @@ class Router
     {
     }
 
+    public static function group($attributes, $callback)
+    {
+        if (is_string($attributes)) {
+            $attributes = ['prefix' => $attributes];
+        }
+
+        self::$groupStack[] = $attributes;
+
+        if (is_callable($callback)) {
+            call_user_func($callback);
+        }
+
+        array_pop(self::$groupStack);
+    }
+
     public static function addRoute($methods, $uri, $action)
     {
         $methods = array_map('strtoupper', (array)$methods);
-        $uri = '/' . trim($uri, '/');
+
+        $prefix = '';
+        $namespace = '';
+
+        foreach (self::$groupStack as $group) {
+            if (!empty($group['prefix'])) {
+                $prefix .= '/' . trim($group['prefix'], '/');
+            }
+            if (!empty($group['namespace'])) {
+                $namespace .= trim($group['namespace'], '\\') . '\\';
+            }
+        }
+
+        $fullUri = '/' . trim($prefix . '/' . trim($uri, '/'), '/');
+
+        if (is_string($action) && $namespace !== '' && strpos($action, '\\') !== 0) {
+            $action = $namespace . $action;
+        }
 
         self::$routes[] = [
             'methods' => $methods,
-            'uri'     => $uri,
+            'uri'     => $fullUri,
             'action'  => $action,
-            'pattern' => self::compilePattern($uri),
+            'pattern' => self::compilePattern($fullUri),
         ];
     }
 
