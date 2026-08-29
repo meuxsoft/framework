@@ -6,42 +6,19 @@ use RuntimeException;
 
 class Layout
 {
-    /**
-     * @var string
-     */
     protected $viewContent = '';
-
-    /**
-     * @var array
-     */
     protected $viewData = [];
 
-    /**
-     * Prevent direct public instantiation.
-     */
     protected function __construct()
     {
     }
 
-    /**
-     * Get rendered view content inside layout ($this->content()).
-     *
-     * @return string
-     */
-    public function content(): string
+    public function content()
     {
         return $this->viewContent;
     }
 
-    /**
-     * Render a view wrapped in a layout.
-     *
-     * @param string|null $layout Layout name (e.g. 'main', 'admin') or null for no layout
-     * @param string $view View path (e.g. 'home.index' or 'Product::index' or 'products.index')
-     * @param array $data Data array passed to view & layout
-     * @return string
-     */
-    public static function render(?string $layout, string $view, array $data = []): string
+    public static function render($layout, $view, $data = [])
     {
         $content = self::view($view, $data);
 
@@ -62,14 +39,7 @@ class Layout
         return $instance->renderLayoutFile($layoutFile, $data);
     }
 
-    /**
-     * Render layout file within instance scope ($this is bound).
-     *
-     * @param string $layoutFile
-     * @param array $data
-     * @return string
-     */
-    protected function renderLayoutFile(string $layoutFile, array $data): string
+    protected function renderLayoutFile($layoutFile, $data)
     {
         extract($data, EXTR_SKIP);
 
@@ -81,14 +51,7 @@ class Layout
         return $output;
     }
 
-    /**
-     * Render only the view and return output string.
-     *
-     * @param string $view
-     * @param array $data
-     * @return string
-     */
-    public static function view(string $view, array $data = []): string
+    public static function view($view, $data = [])
     {
         $viewFile = self::resolveViewPath($view);
 
@@ -96,7 +59,6 @@ class Layout
             throw new RuntimeException("View file not found: [{$viewFile}]");
         }
 
-        // Security: Ensure view file is strictly within allowed directories (LFI prevention)
         $realViewFile = realpath($viewFile);
         $realViewsPath = realpath(VIEW_PATH);
         $realModulesPath = is_dir(MODULES_PATH) ? realpath(MODULES_PATH) : false;
@@ -119,20 +81,12 @@ class Layout
         return ob_get_clean();
     }
 
-    /**
-     * Resolve view path from string name (handles dot notation & module syntax).
-     *
-     * @param string $view
-     * @return string
-     */
-    public static function resolveViewPath(string $view): string
+    public static function resolveViewPath($view)
     {
-        // Security: Prevent Directory Traversal & Null Byte Injection
         if (strpos($view, '..') !== false || strpos($view, "\0") !== false) {
             throw new RuntimeException("Security Exception: Directory traversal attempt detected in view name [{$view}]");
         }
 
-        // Check Module syntax: "Module::view.name"
         if (strpos($view, '::') !== false) {
             [$module, $moduleView] = explode('::', $view, 2);
             $module = preg_replace('/[^a-zA-Z0-9_-]/', '', $module);
@@ -142,23 +96,20 @@ class Layout
 
         $normalized = str_replace('.', '/', $view);
 
-        // Check if direct path under app/Views
         $standardPath = VIEW_PATH . '/' . $normalized . '.php';
         if (file_exists($standardPath)) {
             return $standardPath;
         }
 
-        // Check if first segment corresponds to an active module (e.g. 'products.index' -> 'Product/Views/index.php')
         $parts = explode('/', $normalized);
         if (count($parts) > 0) {
-            $firstSegment = ucfirst(rtrim($parts[0], 's')); // e.g. 'products' -> 'Product'
+            $firstSegment = ucfirst(rtrim($parts[0], 's'));
             $subPath = implode('/', array_slice($parts, 1));
             $moduleViewPath = MODULES_PATH . '/' . $firstSegment . '/Views/' . $subPath . '.php';
             if (file_exists($moduleViewPath)) {
                 return $moduleViewPath;
             }
 
-            // Direct module match e.g. 'Product/Views/index.php'
             $directModulePath = MODULES_PATH . '/' . $parts[0] . '/Views/' . $subPath . '.php';
             if (file_exists($directModulePath)) {
                 return $directModulePath;
@@ -168,15 +119,7 @@ class Layout
         return $standardPath;
     }
 
-    /**
-     * Send a JSON response.
-     *
-     * @param mixed $data
-     * @param int $status
-     * @param array $headers
-     * @return void
-     */
-    public static function json($data, int $status = 200, array $headers = []): void
+    public static function json($data, $status = 200, $headers = [])
     {
         http_response_code($status);
         header('Content-Type: application/json; charset=utf-8');

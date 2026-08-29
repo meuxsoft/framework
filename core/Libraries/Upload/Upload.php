@@ -2,23 +2,10 @@
 
 namespace Core\Libraries\Upload;
 
-use RuntimeException;
-
 class Upload
 {
-    /**
-     * @var string
-     */
     protected $uploadPath = 'uploads';
-
-    /**
-     * @var array
-     */
     protected $allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'];
-
-    /**
-     * @var array
-     */
     protected $allowedMimeTypes = [
         'jpg'  => ['image/jpeg', 'image/pjpeg'],
         'jpeg' => ['image/jpeg', 'image/pjpeg'],
@@ -28,85 +15,25 @@ class Upload
         'pdf'  => ['application/pdf'],
     ];
 
-    /**
-     * @var int (Default 5 MB)
-     */
     protected $maxSize = 5242880;
-
-    /**
-     * @var bool
-     */
     protected $randomizeName = true;
-
-    /**
-     * @var string|null
-     */
     protected $customName = null;
-
-    /**
-     * @var bool
-     */
     protected $resizeEnabled = false;
-
-    /**
-     * @var int
-     */
     protected $resizeWidth = 0;
-
-    /**
-     * @var int
-     */
     protected $resizeHeight = 0;
-
-    /**
-     * @var string (fit, crop, exact, width, height)
-     */
     protected $resizeMode = 'fit';
-
-    /**
-     * @var int (1-100)
-     */
     protected $imageQuality = 85;
-
-    /**
-     * @var bool
-     */
     protected $thumbEnabled = false;
-
-    /**
-     * @var int
-     */
     protected $thumbWidth = 150;
-
-    /**
-     * @var int
-     */
     protected $thumbHeight = 150;
-
-    /**
-     * @var string
-     */
     protected $thumbPrefix = 'thumb_';
-
-    /**
-     * @var array
-     */
     protected $errors = [];
 
-    /**
-     * Protected constructor. Use static setPath() or init().
-     */
     protected function __construct()
     {
     }
 
-    /**
-     * Initialize upload fluent builder with target path.
-     *
-     * @param string|null $path
-     * @return static
-     */
-    public static function setPath(?string $path = null): self
+    public static function setPath($path = null)
     {
         $instance = new self();
         if ($path !== null) {
@@ -115,87 +42,42 @@ class Upload
         return $instance;
     }
 
-    /**
-     * Alias for setPath.
-     *
-     * @param string|null $path
-     * @return static
-     */
-    public static function init(?string $path = null): self
+    public static function init($path = null)
     {
         return self::setPath($path);
     }
 
-    /**
-     * Set target upload directory.
-     *
-     * @param string $path
-     * @return $this
-     */
-    public function path(string $path): self
+    public function path($path)
     {
         $this->uploadPath = trim(str_replace(['..', "\0"], '', $path), '/\\');
         return $this;
     }
 
-    /**
-     * Set allowed file extensions.
-     *
-     * @param array $types
-     * @return $this
-     */
-    public function setAllowedTypes(array $types): self
+    public function setAllowedTypes($types)
     {
         $this->allowedTypes = array_map('strtolower', $types);
         return $this;
     }
 
-    /**
-     * Set max file size in bytes.
-     *
-     * @param int $bytes
-     * @return $this
-     */
-    public function setMaxSize(int $bytes): self
+    public function setMaxSize($bytes)
     {
         $this->maxSize = $bytes;
         return $this;
     }
 
-    /**
-     * Set whether to randomize the filename.
-     *
-     * @param bool $randomize
-     * @return $this
-     */
-    public function randomize(bool $randomize = true): self
+    public function randomize($randomize = true)
     {
         $this->randomizeName = $randomize;
         return $this;
     }
 
-    /**
-     * Set custom filename (extension is preserved).
-     *
-     * @param string $name
-     * @return $this
-     */
-    public function setCustomName(string $name): self
+    public function setCustomName($name)
     {
         $this->customName = $name;
         return $this;
     }
 
-    /**
-     * Configure image resizing.
-     *
-     * @param int $width
-     * @param int $height
-     * @param string $mode 'fit' (proportional within box), 'crop' (cover & center crop), 'exact' (fixed stretch), 'width' (scale by width), 'height' (scale by height)
-     * @param int|null $quality Compression quality (1-100)
-     * @return $this
-     */
-    public function resize(int $width, int $height = 0, string $mode = 'fit', ?int $quality = null): self
+    public function resize($width, $height = 0, $mode = 'fit', $quality = null)
     {
         $this->resizeEnabled = true;
         $this->resizeWidth = $width;
@@ -209,16 +91,7 @@ class Upload
         return $this;
     }
 
-    /**
-     * Configure automatic thumbnail generation.
-     *
-     * @param bool $enable
-     * @param int $width
-     * @param int $height
-     * @param string $prefix
-     * @return $this
-     */
-    public function thumb(bool $enable = true, int $width = 150, int $height = 150, string $prefix = 'thumb_'): self
+    public function thumb($enable = true, $width = 150, $height = 150, $prefix = 'thumb_')
     {
         $this->thumbEnabled = $enable;
         $this->thumbWidth = $width;
@@ -227,42 +100,21 @@ class Upload
         return $this;
     }
 
-    /**
-     * Set image compression quality (1-100).
-     *
-     * @param int $quality
-     * @return $this
-     */
-    public function quality(int $quality): self
+    public function quality($quality)
     {
         $this->imageQuality = max(1, min(100, $quality));
         return $this;
     }
 
-    /**
-     * Static direct upload shortcut.
-     *
-     * @param array $fileArray ($_FILES['key'])
-     * @param string $targetPath
-     * @param array $allowedTypes
-     * @return array
-     */
-    public static function file(array $fileArray, string $targetPath = 'uploads', array $allowedTypes = ['jpg', 'jpeg', 'png', 'webp']): array
+    public static function file($fileArray, $targetPath = 'uploads', $allowedTypes = ['jpg', 'jpeg', 'png', 'webp'])
     {
         return self::setPath($targetPath)->setAllowedTypes($allowedTypes)->upload($fileArray);
     }
 
-    /**
-     * Process upload for a file or multiple files.
-     *
-     * @param array $fileArray ($_FILES['key'])
-     * @return array
-     */
-    public function upload(array $fileArray): array
+    public function upload($fileArray)
     {
         $this->errors = [];
 
-        // Check if multiple files uploaded
         if (isset($fileArray['name']) && is_array($fileArray['name'])) {
             return $this->uploadMultiple($fileArray);
         }
@@ -270,13 +122,7 @@ class Upload
         return $this->uploadSingle($fileArray);
     }
 
-    /**
-     * Upload and process a single file.
-     *
-     * @param array $file
-     * @return array
-     */
-    protected function uploadSingle(array $file): array
+    protected function uploadSingle($file)
     {
         if (empty($file) || !isset($file['error'])) {
             return [
@@ -294,7 +140,6 @@ class Upload
             ];
         }
 
-        // Check file size
         if ($file['size'] > $this->maxSize) {
             $maxMb = round($this->maxSize / 1048576, 2);
             return [
@@ -304,10 +149,8 @@ class Upload
             ];
         }
 
-        // Check filename and extension
         $origName = $file['name'];
 
-        // Security 1: Null byte & Path Traversal check
         if (strpos($origName, "\0") !== false || strpos($origName, '..') !== false) {
             return [
                 'success' => false,
@@ -318,7 +161,6 @@ class Upload
 
         $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
 
-        // Security 2: Dangerous Executable Extensions Blacklist
         $dangerousExtensions = [
             'php', 'php3', 'php4', 'php5', 'php7', 'php8', 'phtml', 'phar', 'pht', 'phps',
             'shtml', 'cgi', 'pl', 'asp', 'aspx', 'jsp', 'sh', 'bash', 'exe', 'bat', 'cmd',
@@ -333,7 +175,6 @@ class Upload
             ];
         }
 
-        // Security 3: Double extension detection (e.g., shell.php.jpg)
         $nameParts = explode('.', $origName);
         if (count($nameParts) > 2) {
             foreach ($nameParts as $part) {
@@ -355,7 +196,6 @@ class Upload
             ];
         }
 
-        // Validate MIME type safely
         $mime = $this->detectMimeType($file['tmp_name'], $file['type'] ?? null);
 
         if ($mime && isset($this->allowedMimeTypes[$ext])) {
@@ -368,7 +208,6 @@ class Upload
             }
         }
 
-        // Resolve absolute target directory
         $cleanUploadPath = trim(str_replace(['..', "\0"], '', $this->uploadPath), '/\\');
         $targetDir = PUBLIC_PATH . '/' . $cleanUploadPath;
 
@@ -382,7 +221,6 @@ class Upload
             }
         }
 
-        // Generate safe filename
         if ($this->customName !== null) {
             $finalFilename = $this->sanitizeFilename($this->customName) . '.' . $ext;
         } elseif ($this->randomizeName) {
@@ -395,7 +233,6 @@ class Upload
         $destination = $targetDir . '/' . $finalFilename;
         $relativePath = $cleanUploadPath . '/' . $finalFilename;
 
-        // Move uploaded file to target destination
         if (!move_uploaded_file($file['tmp_name'], $destination)) {
             return [
                 'success' => false,
@@ -410,9 +247,7 @@ class Upload
         $thumbPath = null;
         $thumbUrl = null;
 
-        // Image Processing (Resizing & Thumbnails)
         if ($isImage && extension_loaded('gd')) {
-            // 1. Process Main Image Resizing if enabled
             if ($this->resizeEnabled && $this->resizeWidth > 0) {
                 $this->processImage(
                     $destination,
@@ -424,14 +259,12 @@ class Upload
                 );
             }
 
-            // Read dimensions of final image
             $imgSize = @getimagesize($destination);
             if ($imgSize) {
                 $finalWidth = $imgSize[0];
                 $finalHeight = $imgSize[1];
             }
 
-            // 2. Generate Thumbnail if enabled
             if ($this->thumbEnabled && $this->thumbWidth > 0) {
                 $thumbFilename = $this->thumbPrefix . $finalFilename;
                 $thumbDestination = $targetDir . '/' . $thumbFilename;
@@ -441,7 +274,7 @@ class Upload
                     $thumbDestination,
                     $this->thumbWidth,
                     $this->thumbHeight,
-                    'crop', // Default thumbnail mode: center crop
+                    'crop',
                     $this->imageQuality
                 );
 
@@ -469,18 +302,7 @@ class Upload
         ];
     }
 
-    /**
-     * Resize, crop or convert an image using PHP GD.
-     *
-     * @param string $sourcePath
-     * @param string $destPath
-     * @param int $targetWidth
-     * @param int $targetHeight
-     * @param string $mode 'fit', 'crop', 'exact', 'width', 'height'
-     * @param int $quality
-     * @return bool
-     */
-    public function processImage(string $sourcePath, string $destPath, int $targetWidth, int $targetHeight = 0, string $mode = 'fit', int $quality = 85): bool
+    public function processImage($sourcePath, $destPath, $targetWidth, $targetHeight = 0, $mode = 'fit', $quality = 85)
     {
         if (!file_exists($sourcePath)) {
             return false;
@@ -493,7 +315,6 @@ class Upload
 
         [$origWidth, $origHeight, $imageType] = $imageInfo;
 
-        // Load image resource based on type
         switch ($imageType) {
             case IMAGETYPE_JPEG:
                 $sourceImage = @imagecreatefromjpeg($sourcePath);
@@ -515,7 +336,6 @@ class Upload
             return false;
         }
 
-        // Calculate new dimensions and crop coordinates
         $srcX = 0;
         $srcY = 0;
         $srcW = $origWidth;
@@ -527,7 +347,6 @@ class Upload
         switch ($mode) {
             case 'crop':
             case 'cover':
-                // Scale and crop from center to achieve exact dimensions
                 $ratioOrig = $origWidth / $origHeight;
                 $ratioTarget = $newW / $newH;
 
@@ -541,24 +360,20 @@ class Upload
                 break;
 
             case 'width':
-                // Scale height proportionally based on target width
                 $newH = (int)round(($origHeight / $origWidth) * $newW);
                 break;
 
             case 'height':
-                // Scale width proportionally based on target height
                 $newW = (int)round(($origWidth / $origHeight) * $newH);
                 break;
 
             case 'exact':
             case 'fixed':
-                // Forced exact dimensions (may stretch)
                 break;
 
             case 'fit':
             case 'auto':
             default:
-                // Fit within bounding box keeping aspect ratio
                 $scale = min($newW / $origWidth, $newH / $origHeight);
                 if ($scale < 1) {
                     $newW = (int)round($origWidth * $scale);
@@ -570,10 +385,8 @@ class Upload
                 break;
         }
 
-        // Create new truecolor canvas
         $canvas = imagecreatetruecolor($newW, $newH);
 
-        // Preserve transparency for PNG, GIF and WebP
         if ($imageType === IMAGETYPE_PNG || $imageType === IMAGETYPE_WEBP) {
             imagealphablending($canvas, false);
             imagesavealpha($canvas, true);
@@ -589,17 +402,14 @@ class Upload
             }
         }
 
-        // Resample image
         imagecopyresampled($canvas, $sourceImage, 0, 0, $srcX, $srcY, $newW, $newH, $srcW, $srcH);
 
-        // Save image to destination
         $saved = false;
         switch ($imageType) {
             case IMAGETYPE_JPEG:
                 $saved = imagejpeg($canvas, $destPath, $quality);
                 break;
             case IMAGETYPE_PNG:
-                // PNG quality scale is 0 (no compression) to 9
                 $pngQuality = (int)round((100 - $quality) / 10);
                 $saved = imagepng($canvas, $destPath, $pngQuality);
                 break;
@@ -619,13 +429,7 @@ class Upload
         return $saved;
     }
 
-    /**
-     * Upload multiple files.
-     *
-     * @param array $fileArray
-     * @return array
-     */
-    protected function uploadMultiple(array $fileArray): array
+    protected function uploadMultiple($fileArray)
     {
         $results = [];
         $count = count($fileArray['name']);
@@ -656,15 +460,8 @@ class Upload
         ];
     }
 
-    /**
-     * Sanitize filename.
-     *
-     * @param string $filename
-     * @return string
-     */
-    protected function sanitizeFilename(string $filename): string
+    protected function sanitizeFilename($filename)
     {
-        // Convert Turkish characters to ASCII
         $turkish = ['ç', 'Ç', 'ğ', 'Ğ', 'ı', 'İ', 'ö', 'Ö', 'ş', 'Ş', 'ü', 'Ü'];
         $ascii   = ['c', 'C', 'g', 'G', 'i', 'I', 'o', 'O', 's', 'S', 'u', 'U'];
         $filename = str_replace($turkish, $ascii, $filename);
@@ -673,13 +470,7 @@ class Upload
         return trim(preg_replace('/_+/', '_', $filename), '_');
     }
 
-    /**
-     * Human readable PHP upload error messages.
-     *
-     * @param int $code
-     * @return string
-     */
-    protected function getUploadErrorMessage(int $code): string
+    protected function getUploadErrorMessage($code)
     {
         switch ($code) {
             case UPLOAD_ERR_INI_SIZE:
@@ -701,16 +492,8 @@ class Upload
         }
     }
 
-    /**
-     * Safely detect MIME type of a file with multiple fallbacks.
-     *
-     * @param string $filePath
-     * @param string|null $clientMime
-     * @return string
-     */
-    protected function detectMimeType(string $filePath, ?string $clientMime = null): string
+    protected function detectMimeType($filePath, $clientMime = null)
     {
-        // 1. Try finfo extension
         if (function_exists('finfo_open')) {
             $finfo = @finfo_open(FILEINFO_MIME_TYPE);
             if ($finfo) {
@@ -722,7 +505,6 @@ class Upload
             }
         }
 
-        // 2. Try mime_content_type
         if (function_exists('mime_content_type')) {
             $mime = @mime_content_type($filePath);
             if ($mime) {
@@ -730,7 +512,6 @@ class Upload
             }
         }
 
-        // 3. Try getimagesize for images
         if (function_exists('getimagesize')) {
             $imageInfo = @getimagesize($filePath);
             if ($imageInfo && isset($imageInfo['mime'])) {
@@ -738,7 +519,6 @@ class Upload
             }
         }
 
-        // 4. Fallback to client provided MIME or default
         return $clientMime ?: 'application/octet-stream';
     }
 }

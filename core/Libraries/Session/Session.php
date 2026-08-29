@@ -4,29 +4,14 @@ namespace Core\Libraries\Session;
 
 class Session
 {
-    /**
-     * @var string
-     */
     protected static $flashKey = '_flash_data';
-
-    /**
-     * @var string
-     */
     protected static $csrfKey = '_csrf_token';
 
-    /**
-     * Prevent instantiation.
-     */
     private function __construct()
     {
     }
 
-    /**
-     * Start the session with secure settings.
-     *
-     * @return void
-     */
-    public static function start(): void
+    public static function start()
     {
         if (session_status() === PHP_SESSION_NONE) {
             $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
@@ -49,99 +34,52 @@ class Session
             @session_start();
         }
 
-        // Initialize flash session storage
         if (!isset($_SESSION[self::$flashKey])) {
             $_SESSION[self::$flashKey] = [];
         }
 
-        // Automatically create CSRF token if not set
         if (empty($_SESSION[self::$csrfKey])) {
             $_SESSION[self::$csrfKey] = bin2hex(random_bytes(32));
         }
     }
 
-    /**
-     * Set a session key-value pair.
-     *
-     * @param string $key
-     * @param mixed $value
-     * @return void
-     */
-    public static function set(string $key, $value): void
+    public static function set($key, $value)
     {
         self::start();
         $_SESSION[$key] = $value;
     }
 
-    /**
-     * Get a session value by key.
-     *
-     * @param string $key
-     * @param mixed $default
-     * @return mixed
-     */
-    public static function get(string $key, $default = null)
+    public static function get($key, $default = null)
     {
         self::start();
         return $_SESSION[$key] ?? $default;
     }
 
-    /**
-     * Check if a session key exists.
-     *
-     * @param string $key
-     * @return bool
-     */
-    public static function has(string $key): bool
+    public static function has($key)
     {
         self::start();
         return isset($_SESSION[$key]);
     }
 
-    /**
-     * Remove a key from session.
-     *
-     * @param string $key
-     * @return void
-     */
-    public static function remove(string $key): void
+    public static function remove($key)
     {
         self::start();
         unset($_SESSION[$key]);
     }
 
-    /**
-     * Get all session data.
-     *
-     * @return array
-     */
-    public static function all(): array
+    public static function all()
     {
         self::start();
         return $_SESSION;
     }
 
-    /**
-     * Store flash data for the next request.
-     *
-     * @param string $key
-     * @param mixed $value
-     * @return void
-     */
-    public static function flash(string $key, $value): void
+    public static function flash($key, $value)
     {
         self::start();
         $_SESSION[self::$flashKey][$key] = $value;
     }
 
-    /**
-     * Get flash data and remove it.
-     *
-     * @param string $key
-     * @param mixed $default
-     * @return mixed
-     */
-    public static function getFlash(string $key, $default = null)
+    public static function getFlash($key, $default = null)
     {
         self::start();
         if (isset($_SESSION[self::$flashKey][$key])) {
@@ -152,24 +90,13 @@ class Session
         return $default;
     }
 
-    /**
-     * Check if flash key exists.
-     *
-     * @param string $key
-     * @return bool
-     */
-    public static function hasFlash(string $key): bool
+    public static function hasFlash($key)
     {
         self::start();
         return isset($_SESSION[self::$flashKey][$key]);
     }
 
-    /**
-     * Generate or regenerate CSRF token.
-     *
-     * @return string
-     */
-    public static function generateCsrfToken(): string
+    public static function generateCsrfToken()
     {
         self::start();
         $token = bin2hex(random_bytes(32));
@@ -177,12 +104,7 @@ class Session
         return $token;
     }
 
-    /**
-     * Get current CSRF token.
-     *
-     * @return string
-     */
-    public static function csrfToken(): string
+    public static function csrfToken()
     {
         self::start();
         if (empty($_SESSION[self::$csrfKey])) {
@@ -191,13 +113,7 @@ class Session
         return $_SESSION[self::$csrfKey];
     }
 
-    /**
-     * Verify CSRF token.
-     *
-     * @param string|null $token
-     * @return bool
-     */
-    public static function verifyCsrfToken(?string $token): bool
+    public static function verifyCsrfToken($token)
     {
         if (empty($token)) {
             return false;
@@ -205,24 +121,13 @@ class Session
         return hash_equals(self::csrfToken(), $token);
     }
 
-    /**
-     * Regenerate session ID.
-     *
-     * @param bool $deleteOldSession
-     * @return bool
-     */
-    public static function regenerate(bool $deleteOldSession = true): bool
+    public static function regenerate($deleteOldSession = true)
     {
         self::start();
         return session_regenerate_id($deleteOldSession);
     }
 
-    /**
-     * Destroy the session completely.
-     *
-     * @return void
-     */
-    public static function destroy(): void
+    public static function destroy()
     {
         if (session_status() === PHP_SESSION_ACTIVE) {
             $_SESSION = [];

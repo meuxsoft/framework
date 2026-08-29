@@ -4,77 +4,40 @@ namespace Core\Libraries\Security;
 
 use Core\Libraries\Session\Session;
 use Core\Libraries\Request\Request;
-use RuntimeException;
 
 class Security
 {
-    /**
-     * Prevent direct instantiation.
-     */
     private function __construct()
     {
     }
 
-    /**
-     * Escape HTML special characters for XSS prevention.
-     *
-     * @param mixed $value
-     * @return string
-     */
-    public static function escape($value): string
+    public static function escape($value)
     {
         if ($value === null) {
             return '';
         }
-        return htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     }
 
-    /**
-     * Alias for escape.
-     *
-     * @param mixed $value
-     * @return string
-     */
-    public static function e($value): string
+    public static function e($value)
     {
         return self::escape($value);
     }
 
-    /**
-     * Hash a password securely using bcrypt.
-     *
-     * @param string $password
-     * @param array $options
-     * @return string
-     */
-    public static function hashPassword(string $password, array $options = []): string
+    public static function hashPassword($password, $options = [])
     {
         return password_hash($password, PASSWORD_BCRYPT, $options);
     }
 
-    /**
-     * Verify a password against a hash.
-     *
-     * @param string $password
-     * @param string $hash
-     * @return bool
-     */
-    public static function verifyPassword(string $password, string $hash): bool
+    public static function verifyPassword($password, $hash)
     {
         return password_verify($password, $hash);
     }
 
-    /**
-     * Verify CSRF token from POST/HEADER data.
-     *
-     * @return bool
-     */
-    public static function validateCsrf(): bool
+    public static function validateCsrf()
     {
-        // Check POST parameter
         $token = Request::post('_csrf_token');
 
-        // Check header (e.g. X-CSRF-TOKEN)
         if (empty($token)) {
             $token = Request::header('X-CSRF-TOKEN');
         }
@@ -82,12 +45,7 @@ class Security
         return Session::verifyCsrfToken($token);
     }
 
-    /**
-     * Enforce CSRF token or abort with 419 Page Expired.
-     *
-     * @return void
-     */
-    public static function checkCsrf(): void
+    public static function checkCsrf()
     {
         if (in_array(Request::method(), ['POST', 'PUT', 'DELETE', 'PATCH'], true)) {
             if (!self::validateCsrf()) {
@@ -98,12 +56,6 @@ class Security
         }
     }
 
-    /**
-     * Sanitize input recursively.
-     *
-     * @param mixed $input
-     * @return mixed
-     */
     public static function sanitize($input)
     {
         if (is_array($input)) {
@@ -122,14 +74,7 @@ class Security
         return $input;
     }
 
-    /**
-     * Validate data against simple validation rules.
-     *
-     * @param array $data
-     * @param array $rules e.g. ['name' => 'required|min:3|max:100', 'email' => 'required|email', 'price' => 'required|numeric']
-     * @return array Array of errors indexed by field name (empty if valid)
-     */
-    public static function validate(array $data, array $rules): array
+    public static function validate($data, $rules)
     {
         $errors = [];
 
@@ -154,14 +99,13 @@ class Security
                     }
                 }
 
-                // If not required and empty, skip remaining validations
                 if ($value === null || (is_string($value) && trim($value) === '')) {
                     continue;
                 }
 
                 if ($ruleName === 'min' && isset($params[0])) {
-                    $min = (int)$params[0];
-                    if (is_numeric($value) && (float)$value < $min) {
+                    $min = $params[0];
+                    if (is_numeric($value) && $value < $min) {
                         $errors[$field][] = "Değer en az {$min} olmalıdır.";
                     } elseif (is_string($value) && mb_strlen($value) < $min) {
                         $errors[$field][] = "Bu alan en az {$min} karakter olmalıdır.";
@@ -169,8 +113,8 @@ class Security
                 }
 
                 if ($ruleName === 'max' && isset($params[0])) {
-                    $max = (int)$params[0];
-                    if (is_numeric($value) && (float)$value > $max) {
+                    $max = $params[0];
+                    if (is_numeric($value) && $value > $max) {
                         $errors[$field][] = "Değer en fazla {$max} olabilir.";
                     } elseif (is_string($value) && mb_strlen($value) > $max) {
                         $errors[$field][] = "Bu alan en fazla {$max} karakter olabilir.";

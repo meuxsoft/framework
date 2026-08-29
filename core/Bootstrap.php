@@ -12,24 +12,13 @@ use ErrorException;
 
 class Bootstrap
 {
-    /**
-     * @var string
-     */
     protected static $rootDir;
 
-    /**
-     * Prevent direct instantiation.
-     */
     private function __construct()
     {
     }
 
-    /**
-     * Run the application lifecycle.
-     *
-     * @return void
-     */
-    public static function run(): void
+    public static function run()
     {
         if (!defined('ROOT_PATH')) {
             define('ROOT_PATH', dirname(__DIR__));
@@ -73,20 +62,13 @@ class Bootstrap
         self::dispatch();
     }
 
-    /**
-     * Register PSR-4 autoloader with built-in fallback.
-     *
-     * @return void
-     */
-    protected static function registerAutoloader(): void
+    protected static function registerAutoloader()
     {
-        // 1. Check Composer autoload
         $composerAutoload = ROOT_PATH . '/vendor/autoload.php';
         if (file_exists($composerAutoload)) {
             require_once $composerAutoload;
         }
 
-        // 2. Built-in PSR-4 Autoloader fallback (ensures framework works even without vendor/autoload.php)
         spl_autoload_register(function ($class) {
             $prefixes = [
                 'App\\'  => APP_PATH . '/',
@@ -112,12 +94,7 @@ class Bootstrap
         });
     }
 
-    /**
-     * Load global helper functions.
-     *
-     * @return void
-     */
-    protected static function loadHelpers(): void
+    protected static function loadHelpers()
     {
         $helpersPath = CORE_PATH . '/Helpers/helpers.php';
         if (file_exists($helpersPath)) {
@@ -125,12 +102,7 @@ class Bootstrap
         }
     }
 
-    /**
-     * Register error and exception handlers with Dev/Prod discrimination.
-     *
-     * @return void
-     */
-    protected static function registerErrorHandlers(): void
+    protected static function registerErrorHandlers()
     {
         error_reporting(E_ALL);
 
@@ -146,17 +118,10 @@ class Bootstrap
         });
     }
 
-    /**
-     * Handle uncaught exceptions.
-     *
-     * @param Throwable $e
-     * @return void
-     */
-    protected static function handleException(Throwable $e): void
+    protected static function handleException(Throwable $e)
     {
         $isDebug = config('app.debug', true);
 
-        // Always log error to storage/logs
         self::logException($e);
 
         if (!headers_sent()) {
@@ -171,13 +136,7 @@ class Bootstrap
         exit;
     }
 
-    /**
-     * Log exception into storage/logs/app-YYYY-MM-DD.log.
-     *
-     * @param Throwable $e
-     * @return void
-     */
-    protected static function logException(Throwable $e): void
+    protected static function logException(Throwable $e)
     {
         $logDir = STORAGE_PATH . '/logs';
         if (!is_dir($logDir)) {
@@ -205,13 +164,7 @@ class Bootstrap
         file_put_contents($logFile, $entry, FILE_APPEND | LOCK_EX);
     }
 
-    /**
-     * Render detailed development error page.
-     *
-     * @param Throwable $e
-     * @return void
-     */
-    protected static function renderDevelopmentException(Throwable $e): void
+    protected static function renderDevelopmentException(Throwable $e)
     {
         $class = get_class($e);
         $message = htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8');
@@ -262,7 +215,7 @@ class Bootstrap
             <div class="meta-grid">
                 <div class="meta-item">
                     <div class="meta-label">PHP Versiyonu</div>
-                    <div class="meta-val">PHP 7.3+ (Runtime: PHP 7.3)</div>
+                    <div class="meta-val">PHP 7.3+</div>
                 </div>
                 <div class="meta-item">
                     <div class="meta-label">HTTP Metodu</div>
@@ -280,12 +233,7 @@ class Bootstrap
 HTML;
     }
 
-    /**
-     * Render safe production 500 error page.
-     *
-     * @return void
-     */
-    protected static function renderProductionException(): void
+    protected static function renderProductionException()
     {
         echo <<<HTML
 <!DOCTYPE html>
@@ -313,12 +261,7 @@ HTML;
 HTML;
     }
 
-    /**
-     * Send essential HTTP security headers.
-     *
-     * @return void
-     */
-    protected static function sendSecurityHeaders(): void
+    protected static function sendSecurityHeaders()
     {
         if (!headers_sent()) {
             header('X-Frame-Options: SAMEORIGIN');
@@ -331,12 +274,7 @@ HTML;
         }
     }
 
-    /**
-     * Initialize environment settings.
-     *
-     * @return void
-     */
-    protected static function initEnvironment(): void
+    protected static function initEnvironment()
     {
         $timezone = config('app.timezone', 'Europe/Istanbul');
         date_default_timezone_set($timezone);
@@ -345,32 +283,17 @@ HTML;
         mb_internal_encoding($charset);
     }
 
-    /**
-     * Start and configure session.
-     *
-     * @return void
-     */
-    protected static function initSession(): void
+    protected static function initSession()
     {
         Session::start();
     }
 
-    /**
-     * Check CSRF token for mutating requests.
-     *
-     * @return void
-     */
-    protected static function checkCsrfProtection(): void
+    protected static function checkCsrfProtection()
     {
         Security::checkCsrf();
     }
 
-    /**
-     * Register & boot application modules.
-     *
-     * @return void
-     */
-    protected static function initModules(): void
+    protected static function initModules()
     {
         $modules = config('app.modules', []);
         foreach ($modules as $module) {
@@ -379,12 +302,7 @@ HTML;
         Module::boot();
     }
 
-    /**
-     * Load main application web routes.
-     *
-     * @return void
-     */
-    protected static function loadRoutes(): void
+    protected static function loadRoutes()
     {
         $webRoutes = ROUTES_PATH . '/web.php';
         if (file_exists($webRoutes)) {
@@ -392,12 +310,7 @@ HTML;
         }
     }
 
-    /**
-     * Dispatch HTTP request through router.
-     *
-     * @return void
-     */
-    protected static function dispatch(): void
+    protected static function dispatch()
     {
         Router::dispatch();
     }

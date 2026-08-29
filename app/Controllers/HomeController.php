@@ -10,11 +10,6 @@ use App\Models\User;
 
 class HomeController extends Controller
 {
-    /**
-     * Varsayılan Layout (main.php) kullanan ana sayfa.
-     *
-     * @return string
-     */
     public function index()
     {
         return $this->view('home.index', [
@@ -23,11 +18,6 @@ class HomeController extends Controller
         ]);
     }
 
-    /**
-     * Farklı bir Layout (auth.php) kullanım örneği.
-     *
-     * @return string
-     */
     public function login()
     {
         return $this->layout('auth')->view('auth.login', [
@@ -35,11 +25,6 @@ class HomeController extends Controller
         ]);
     }
 
-    /**
-     * Dosya & Resim Yükleme Örnek Formu (GET)
-     *
-     * @return string
-     */
     public function uploadDemo()
     {
         return $this->view('upload.index', [
@@ -47,23 +32,17 @@ class HomeController extends Controller
         ]);
     }
 
-    /**
-     * Dosya & Resim Yükleme İşleyicisi (POST)
-     *
-     * @return void
-     */
     public function handleUploadDemo()
     {
         $file = Request::files('image');
-        $randomize = (bool)Request::post('randomize', false);
-        $makeThumb = (bool)Request::post('thumb', false);
+        $randomize = Request::post('randomize') ? true : false;
+        $makeThumb = Request::post('thumb') ? true : false;
         $mode = Request::post('mode', 'fit');
 
-        // Gelişmiş Upload Builder Kullanımı:
         $uploader = Upload::setPath('uploads/demo')
             ->randomize($randomize)
             ->setAllowedTypes(['jpg', 'jpeg', 'png', 'webp', 'gif'])
-            ->setMaxSize(5 * 1024 * 1024); // 5 MB
+            ->setMaxSize(5 * 1024 * 1024);
 
         if ($mode !== 'none') {
             $uploader->resize(800, 600, $mode);
@@ -85,11 +64,6 @@ class HomeController extends Controller
         $this->redirect('/upload-demo');
     }
 
-    /**
-     * JSON API yanıtı (Layout kullanılmaz).
-     *
-     * @return void
-     */
     public function status()
     {
         $this->json([

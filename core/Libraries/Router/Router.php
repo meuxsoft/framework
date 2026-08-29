@@ -3,43 +3,19 @@
 namespace Core\Libraries\Router;
 
 use Core\Libraries\Layout\Layout;
-use Core\Libraries\Request\Request;
-use Exception;
 use RuntimeException;
 
 class Router
 {
-    /**
-     * @var array
-     */
     protected static $routes = [];
-
-    /**
-     * @var callable|null
-     */
     protected static $notFoundHandler = null;
-
-    /**
-     * @var callable|null
-     */
     protected static $methodNotAllowedHandler = null;
 
-    /**
-     * Prevent instantiation.
-     */
     private function __construct()
     {
     }
 
-    /**
-     * Register a route.
-     *
-     * @param string|array $methods
-     * @param string $uri
-     * @param mixed $action
-     * @return void
-     */
-    public static function addRoute($methods, string $uri, $action): void
+    public static function addRoute($methods, $uri, $action)
     {
         $methods = array_map('strtoupper', (array)$methods);
         $uri = '/' . trim($uri, '/');
@@ -52,161 +28,75 @@ class Router
         ];
     }
 
-    /**
-     * Register GET route.
-     *
-     * @param string $uri
-     * @param mixed $action
-     * @return void
-     */
-    public static function get(string $uri, $action): void
+    public static function get($uri, $action)
     {
         self::addRoute(['GET', 'HEAD'], $uri, $action);
     }
 
-    /**
-     * Register POST route.
-     *
-     * @param string $uri
-     * @param mixed $action
-     * @return void
-     */
-    public static function post(string $uri, $action): void
+    public static function post($uri, $action)
     {
         self::addRoute('POST', $uri, $action);
     }
 
-    /**
-     * Register PUT route.
-     *
-     * @param string $uri
-     * @param mixed $action
-     * @return void
-     */
-    public static function put(string $uri, $action): void
+    public static function put($uri, $action)
     {
         self::addRoute('PUT', $uri, $action);
     }
 
-    /**
-     * Register DELETE route.
-     *
-     * @param string $uri
-     * @param mixed $action
-     * @return void
-     */
-    public static function delete(string $uri, $action): void
+    public static function delete($uri, $action)
     {
         self::addRoute('DELETE', $uri, $action);
     }
 
-    /**
-     * Register route for multiple methods.
-     *
-     * @param array $methods
-     * @param string $uri
-     * @param mixed $action
-     * @return void
-     */
-    public static function match(array $methods, string $uri, $action): void
+    public static function match($methods, $uri, $action)
     {
         self::addRoute($methods, $uri, $action);
     }
 
-    /**
-     * Register route for all HTTP methods.
-     *
-     * @param string $uri
-     * @param mixed $action
-     * @return void
-     */
-    public static function any(string $uri, $action): void
+    public static function any($uri, $action)
     {
         self::addRoute(['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'], $uri, $action);
     }
 
-    /**
-     * Convert URI with placeholders (e.g. {id}, {slug}) to regular expression.
-     *
-     * @param string $uri
-     * @return string
-     */
-    protected static function compilePattern(string $uri): string
+    protected static function compilePattern($uri)
     {
-        // Replace {param} with regex capture group
         $pattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '(?P<$1>[^/]+)', $uri);
         return '#^' . $pattern . '$#';
     }
 
-    /**
-     * Set custom 404 handler.
-     *
-     * @param callable $handler
-     * @return void
-     */
-    public static function setNotFoundHandler(callable $handler): void
+    public static function setNotFoundHandler($handler)
     {
         self::$notFoundHandler = $handler;
     }
 
-    /**
-     * Set custom 405 handler.
-     *
-     * @param callable $handler
-     * @return void
-     */
-    public static function setMethodNotAllowedHandler(callable $handler): void
+    public static function setMethodNotAllowedHandler($handler)
     {
         self::$methodNotAllowedHandler = $handler;
     }
 
-    /**
-     * Load route definitions from a file.
-     *
-     * @param string $filePath
-     * @return void
-     */
-    public static function loadRoutes(string $filePath): void
+    public static function loadRoutes($filePath)
     {
         if (file_exists($filePath)) {
             require_once $filePath;
         }
     }
 
-    /**
-     * Get all registered routes.
-     *
-     * @return array
-     */
-    public static function getRoutes(): array
+    public static function getRoutes()
     {
         return self::$routes;
     }
 
-    /**
-     * Clear all registered routes.
-     *
-     * @return void
-     */
-    public static function clear(): void
+    public static function clear()
     {
         self::$routes = [];
     }
 
-    /**
-     * Dispatch the current HTTP request.
-     *
-     * @param string|null $requestMethod
-     * @param string|null $requestUri
-     * @return mixed
-     */
-    public static function dispatch(?string $requestMethod = null, ?string $requestUri = null)
+    public static function dispatch($requestMethod = null, $requestUri = null)
     {
         if ($requestMethod === null) {
             $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-            // Method spoofing for HTML forms (_method: PUT/DELETE/PATCH)
             if ($requestMethod === 'POST' && isset($_POST['_method'])) {
-                $spoofedMethod = strtoupper((string)$_POST['_method']);
+                $spoofedMethod = strtoupper($_POST['_method']);
                 if (in_array($spoofedMethod, ['PUT', 'DELETE', 'PATCH', 'GET', 'HEAD', 'OPTIONS'], true)) {
                     $requestMethod = $spoofedMethod;
                 }
@@ -217,7 +107,6 @@ class Router
             $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
         }
 
-        // Strip query string and sanitize URI
         $path = parse_url($requestUri, PHP_URL_PATH) ?? '/';
         $path = '/' . trim($path, '/');
 
@@ -226,7 +115,6 @@ class Router
         foreach (self::$routes as $route) {
             if (preg_match($route['pattern'], $path, $matches)) {
                 if (in_array(strtoupper($requestMethod), $route['methods'], true)) {
-                    // Extract named parameters
                     $params = [];
                     foreach ($matches as $key => $val) {
                         if (!is_int($key)) {
@@ -247,14 +135,7 @@ class Router
         return self::handleNotFound();
     }
 
-    /**
-     * Execute route action (Closure, string 'Controller@method', or [Controller, method]).
-     *
-     * @param mixed $action
-     * @param array $params
-     * @return mixed
-     */
-    protected static function executeAction($action, array $params = [])
+    protected static function executeAction($action, $params = [])
     {
         if (is_callable($action)) {
             return call_user_func_array($action, array_values($params));
@@ -293,30 +174,21 @@ class Router
         throw new RuntimeException('Invalid route action definition.');
     }
 
-    /**
-     * Resolve fully qualified controller class name.
-     *
-     * @param string $controllerName
-     * @return string
-     */
-    protected static function resolveControllerClass(string $controllerName): string
+    protected static function resolveControllerClass($controllerName)
     {
         if (strpos($controllerName, '\\') === 0) {
             return ltrim($controllerName, '\\');
         }
 
-        // Already namespaced?
         if (class_exists($controllerName)) {
             return $controllerName;
         }
 
-        // Check standard App\Controllers
         $appController = "App\\Controllers\\{$controllerName}";
         if (class_exists($appController)) {
             return $appController;
         }
 
-        // Check Modules (e.g. App\Modules\Product\Controllers\ProductController)
         if (preg_match('/^([A-Z][a-zA-Z0-9_]*)Controller$/', $controllerName, $m)) {
             $moduleName = $m[1];
             $moduleController = "App\\Modules\\{$moduleName}\\Controllers\\{$controllerName}";
@@ -328,11 +200,6 @@ class Router
         return $appController;
     }
 
-    /**
-     * Handle 404 Not Found response.
-     *
-     * @return mixed
-     */
     public static function handleNotFound()
     {
         if (!headers_sent()) {
@@ -351,11 +218,6 @@ class Router
         return null;
     }
 
-    /**
-     * Handle 405 Method Not Allowed response.
-     *
-     * @return mixed
-     */
     public static function handleMethodNotAllowed()
     {
         if (!headers_sent()) {

@@ -3,30 +3,16 @@
 namespace Core\Libraries\Modules;
 
 use Core\Libraries\Router\Router;
-use RuntimeException;
 
 class Module
 {
-    /**
-     * @var array
-     */
     protected static $modules = [];
 
-    /**
-     * Prevent direct instantiation.
-     */
     private function __construct()
     {
     }
 
-    /**
-     * Register a module by name.
-     *
-     * @param string $name Module folder name (e.g. 'Product', 'Auth', 'Admin')
-     * @param bool $active
-     * @return void
-     */
-    public static function register(string $name, bool $active = true): void
+    public static function register($name, $active = true)
     {
         $base = MODULES_PATH;
 
@@ -40,19 +26,13 @@ class Module
         ];
     }
 
-    /**
-     * Boot all registered and active modules.
-     *
-     * @return void
-     */
-    public static function boot(): void
+    public static function boot()
     {
         foreach (self::$modules as $name => &$module) {
             if (!$module['active'] || $module['booted']) {
                 continue;
             }
 
-            // Execute module bootstrap class if present
             if (file_exists($module['bootstrap'])) {
                 require_once $module['bootstrap'];
                 $moduleClass = "App\\Modules\\{$name}\\Module";
@@ -61,7 +41,6 @@ class Module
                 }
             }
 
-            // Register module routes
             if (file_exists($module['routes'])) {
                 Router::loadRoutes($module['routes']);
             }
@@ -70,24 +49,12 @@ class Module
         }
     }
 
-    /**
-     * Check if a module is registered and active.
-     *
-     * @param string $name
-     * @return bool
-     */
-    public static function isActive(string $name): bool
+    public static function isActive($name)
     {
         return isset(self::$modules[$name]) && self::$modules[$name]['active'] === true;
     }
 
-    /**
-     * Enable a module.
-     *
-     * @param string $name
-     * @return void
-     */
-    public static function enable(string $name): void
+    public static function enable($name)
     {
         if (isset(self::$modules[$name])) {
             self::$modules[$name]['active'] = true;
@@ -96,25 +63,14 @@ class Module
         }
     }
 
-    /**
-     * Disable a module.
-     *
-     * @param string $name
-     * @return void
-     */
-    public static function disable(string $name): void
+    public static function disable($name)
     {
         if (isset(self::$modules[$name])) {
             self::$modules[$name]['active'] = false;
         }
     }
 
-    /**
-     * Get all registered modules.
-     *
-     * @return array
-     */
-    public static function all(): array
+    public static function all()
     {
         return self::$modules;
     }

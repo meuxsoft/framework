@@ -2,33 +2,15 @@
 
 namespace Core\Helpers;
 
-use Core\Libraries\Layout\Layout;
-use Core\Libraries\Session\Session;
-use Core\Libraries\Request\Request;
-use Core\Libraries\Security\Security;
-
 class Helper
 {
-    /**
-     * @var array
-     */
     protected static $configCache = [];
 
-    /**
-     * Prevent direct instantiation.
-     */
     private function __construct()
     {
     }
 
-    /**
-     * Load or retrieve config values with dot notation (e.g. 'app.name').
-     *
-     * @param string|null $key
-     * @param mixed $default
-     * @return mixed
-     */
-    public static function config(?string $key = null, $default = null)
+    public static function config($key = null, $default = null)
     {
         if ($key === null) {
             return self::$configCache;
@@ -59,39 +41,20 @@ class Helper
         return $current;
     }
 
-    /**
-     * Generate full application URL.
-     *
-     * @param string $path
-     * @return string
-     */
-    public static function url(string $path = ''): string
+    public static function url($path = '')
     {
         $baseUrl = rtrim(self::config('app.url', 'http://localhost'), '/');
         $cleanPath = ltrim($path, '/');
         return $cleanPath !== '' ? "{$baseUrl}/{$cleanPath}" : $baseUrl;
     }
 
-    /**
-     * Generate asset URL.
-     *
-     * @param string $path
-     * @return string
-     */
-    public static function asset(string $path): string
+    public static function asset($path)
     {
         $cleanPath = ltrim($path, '/');
         return '/assets/' . $cleanPath;
     }
 
-    /**
-     * Redirect to another URL or route.
-     *
-     * @param string $url
-     * @param int $status
-     * @return void
-     */
-    public static function redirect(string $url, int $status = 302): void
+    public static function redirect($url, $status = 302)
     {
         if (strpos($url, 'http://') !== 0 && strpos($url, 'https://') !== 0) {
             $url = self::url($url);
@@ -102,12 +65,7 @@ class Helper
         exit;
     }
 
-    /**
-     * Redirect back to previous page.
-     *
-     * @return void
-     */
-    public static function back(): void
+    public static function back()
     {
         $referer = $_SERVER['HTTP_REFERER'] ?? '/';
         self::redirect($referer);

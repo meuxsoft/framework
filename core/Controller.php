@@ -9,70 +9,31 @@ use Core\Libraries\Session\Session;
 
 class Controller
 {
-    /**
-     * @var string|null
-     */
     protected $layout = 'main';
 
-    /**
-     * Set the active layout for subsequent views.
-     *
-     * @param string|null $layout Layout name (e.g. 'main', 'auth', 'admin') or null for no layout
-     * @return $this
-     */
-    protected function layout(?string $layout)
+    protected function layout($layout)
     {
         $this->layout = $layout;
         return $this;
     }
 
-    /**
-     * Render a view wrapped in a layout.
-     *
-     * @param string $view
-     * @param array $data
-     * @param string|null $layout
-     * @return string
-     */
-    protected function view(string $view, array $data = [], ?string $layout = null)
+    protected function view($view, $data = [], $layout = null)
     {
         $resolvedLayout = $layout !== null ? $layout : $this->layout;
         return Layout::render($resolvedLayout, $view, $data);
     }
 
-    /**
-     * Return a JSON response.
-     *
-     * @param mixed $data
-     * @param int $status
-     * @param array $headers
-     * @return void
-     */
-    protected function json($data, int $status = 200, array $headers = []): void
+    protected function json($data, $status = 200, $headers = [])
     {
         Layout::json($data, $status, $headers);
     }
 
-    /**
-     * Redirect to a specific URL or path.
-     *
-     * @param string $url
-     * @param int $status
-     * @return void
-     */
-    protected function redirect(string $url, int $status = 302): void
+    protected function redirect($url, $status = 302)
     {
         redirect($url, $status);
     }
 
-    /**
-     * Redirect back to previous page with optional flash messages.
-     *
-     * @param string|null $error
-     * @param string|null $success
-     * @return void
-     */
-    protected function back(?string $error = null, ?string $success = null): void
+    protected function back($error = null, $success = null)
     {
         if ($error !== null) {
             Session::flash('error', $error);
@@ -84,14 +45,7 @@ class Controller
         back();
     }
 
-    /**
-     * Validate incoming data and automatically flash errors and old input on failure.
-     *
-     * @param array $data
-     * @param array $rules
-     * @return array Returns sanitized data if valid, redirects back if invalid
-     */
-    protected function validate(array $data, array $rules): array
+    protected function validate($data, $rules)
     {
         $errors = Security::validate($data, $rules);
 

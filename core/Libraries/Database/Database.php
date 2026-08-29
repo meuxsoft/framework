@@ -8,30 +8,14 @@ use RuntimeException;
 
 class Database
 {
-    /**
-     * @var PDO|null
-     */
     protected static $pdo = null;
-
-    /**
-     * @var string|null
-     */
     protected static $activeConnection = null;
 
-    /**
-     * Private constructor to prevent direct instantiation.
-     */
     private function __construct()
     {
     }
 
-    /**
-     * Get or initialize the PDO connection.
-     *
-     * @param string|null $name Connection name (e.g. 'mysql', 'sqlite')
-     * @return PDO
-     */
-    public static function connect(?string $name = null): PDO
+    public static function connect($name = null)
     {
         $dbConfig = function_exists('config') ? config('database') : [];
         if (empty($dbConfig)) {
@@ -89,16 +73,11 @@ class Database
             self::$activeConnection = $connectionName;
             return self::$pdo;
         } catch (PDOException $e) {
-            throw new RuntimeException('Database Connection Error: ' . $e->getMessage(), (int)$e->getCode(), $e);
+            throw new RuntimeException('Database Connection Error: ' . $e->getMessage(), $e->getCode(), $e);
         }
     }
 
-    /**
-     * Get active PDO instance.
-     *
-     * @return PDO
-     */
-    public static function getPdo(): PDO
+    public static function getPdo()
     {
         if (self::$pdo === null) {
             return self::connect();
@@ -106,99 +85,50 @@ class Database
         return self::$pdo;
     }
 
-    /**
-     * Start fluent QueryBuilder for a given table.
-     *
-     * @param string $table
-     * @return QueryBuilder
-     */
-    public static function table(string $table): QueryBuilder
+    public static function table($table)
     {
         return new QueryBuilder(self::getPdo(), $table);
     }
 
-    /**
-     * Execute a raw SQL query with parameters and return records.
-     *
-     * @param string $sql
-     * @param array $params
-     * @return array
-     */
-    public static function query(string $sql, array $params = []): array
+    public static function query($sql, $params = [])
     {
         $stmt = self::getPdo()->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
-    /**
-     * Execute a raw SQL statement (INSERT, UPDATE, DELETE, DDL).
-     *
-     * @param string $sql
-     * @param array $params
-     * @return bool
-     */
-    public static function statement(string $sql, array $params = []): bool
+    public static function statement($sql, $params = [])
     {
         $stmt = self::getPdo()->prepare($sql);
         return $stmt->execute($params);
     }
 
-    /**
-     * Execute raw SQL directly (e.g. migrations/multi-statements).
-     *
-     * @param string $sql
-     * @return int|false
-     */
-    public static function raw(string $sql)
+    public static function raw($sql)
     {
         return self::getPdo()->exec($sql);
     }
 
-    /**
-     * Begin database transaction.
-     *
-     * @return bool
-     */
-    public static function beginTransaction(): bool
+    public static function beginTransaction()
     {
         return self::getPdo()->beginTransaction();
     }
 
-    /**
-     * Commit database transaction.
-     *
-     * @return bool
-     */
-    public static function commit(): bool
+    public static function commit()
     {
         return self::getPdo()->commit();
     }
 
-    /**
-     * Rollback database transaction.
-     *
-     * @return bool
-     */
-    public static function rollback(): bool
+    public static function rollback()
     {
         return self::getPdo()->rollBack();
     }
 
-    /**
-     * Check if currently within a transaction.
-     *
-     * @return bool
-     */
-    public static function inTransaction(): bool
+    public static function inTransaction()
     {
         return self::getPdo()->inTransaction();
     }
 
-    /**
-     * Close connection.
-     */
-    public static function disconnect(): void
+    public static function disconnect()
     {
         self::$pdo = null;
         self::$activeConnection = null;

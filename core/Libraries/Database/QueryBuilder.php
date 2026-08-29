@@ -2,84 +2,28 @@
 
 namespace Core\Libraries\Database;
 
-use PDO;
 use InvalidArgumentException;
 
 class QueryBuilder
 {
-    /**
-     * @var PDO
-     */
     protected $pdo;
-
-    /**
-     * @var string
-     */
     protected $table = '';
-
-    /**
-     * @var array
-     */
     protected $columns = ['*'];
-
-    /**
-     * @var array
-     */
     protected $wheres = [];
-
-    /**
-     * @var array
-     */
     protected $joins = [];
-
-    /**
-     * @var array
-     */
     protected $orders = [];
-
-    /**
-     * @var array
-     */
     protected $groups = [];
-
-    /**
-     * @var array
-     */
     protected $havings = [];
-
-    /**
-     * @var int|null
-     */
     protected $limitValue = null;
-
-    /**
-     * @var int|null
-     */
     protected $offsetValue = null;
-
-    /**
-     * @var array
-     */
     protected $bindings = [];
 
-    /**
-     * QueryBuilder constructor.
-     *
-     * @param PDO $pdo
-     * @param string $table
-     */
-    public function __construct(PDO $pdo, string $table)
+    public function __construct($pdo, $table)
     {
         $this->pdo = $pdo;
         $this->table = $table;
     }
 
-    /**
-     * Select specific columns.
-     *
-     * @param array|string ...$columns
-     * @return $this
-     */
     public function select(...$columns)
     {
         if (empty($columns)) {
@@ -96,16 +40,7 @@ class QueryBuilder
         return $this;
     }
 
-    /**
-     * Add WHERE clause.
-     *
-     * @param string $column
-     * @param mixed $operatorOrValue
-     * @param mixed $value
-     * @param string $boolean ('AND' or 'OR')
-     * @return $this
-     */
-    public function where(string $column, $operatorOrValue = null, $value = null, string $boolean = 'AND')
+    public function where($column, $operatorOrValue = null, $value = null, $boolean = 'AND')
     {
         if (func_num_args() === 2) {
             $value = $operatorOrValue;
@@ -127,45 +62,19 @@ class QueryBuilder
         return $this;
     }
 
-    /**
-     * Add OR WHERE clause.
-     *
-     * @param string $column
-     * @param mixed $operatorOrValue
-     * @param mixed $value
-     * @return $this
-     */
-    public function orWhere(string $column, $operatorOrValue = null, $value = null)
+    public function orWhere($column, $operatorOrValue = null, $value = null)
     {
         return $this->where($column, $operatorOrValue, $value, 'OR');
     }
 
-    /**
-     * Add WHERE LIKE clause.
-     *
-     * @param string $column
-     * @param string $value
-     * @param string $boolean
-     * @return $this
-     */
-    public function like(string $column, string $value, string $boolean = 'AND')
+    public function like($column, $value, $boolean = 'AND')
     {
         return $this->where($column, 'LIKE', $value, $boolean);
     }
 
-    /**
-     * Add WHERE IN clause.
-     *
-     * @param string $column
-     * @param array $values
-     * @param string $boolean
-     * @param bool $not
-     * @return $this
-     */
-    public function whereIn(string $column, array $values, string $boolean = 'AND', bool $not = false)
+    public function whereIn($column, $values, $boolean = 'AND', $not = false)
     {
         if (empty($values)) {
-            // WHERE 0 = 1 if empty array
             $this->wheres[] = [
                 'type'    => 'raw',
                 'sql'     => $not ? '1 = 1' : '0 = 1',
@@ -192,28 +101,12 @@ class QueryBuilder
         return $this;
     }
 
-    /**
-     * Add WHERE NOT IN clause.
-     *
-     * @param string $column
-     * @param array $values
-     * @param string $boolean
-     * @return $this
-     */
-    public function whereNotIn(string $column, array $values, string $boolean = 'AND')
+    public function whereNotIn($column, $values, $boolean = 'AND')
     {
         return $this->whereIn($column, $values, $boolean, true);
     }
 
-    /**
-     * Add WHERE NULL clause.
-     *
-     * @param string $column
-     * @param string $boolean
-     * @param bool $not
-     * @return $this
-     */
-    public function whereNull(string $column, string $boolean = 'AND', bool $not = false)
+    public function whereNull($column, $boolean = 'AND', $not = false)
     {
         $this->wheres[] = [
             'type'    => 'null',
@@ -225,70 +118,28 @@ class QueryBuilder
         return $this;
     }
 
-    /**
-     * Add WHERE NOT NULL clause.
-     *
-     * @param string $column
-     * @param string $boolean
-     * @return $this
-     */
-    public function whereNotNull(string $column, string $boolean = 'AND')
+    public function whereNotNull($column, $boolean = 'AND')
     {
         return $this->whereNull($column, $boolean, true);
     }
 
-    /**
-     * Add JOIN clause.
-     *
-     * @param string $table
-     * @param string $first
-     * @param string $operator
-     * @param string $second
-     * @param string $type
-     * @return $this
-     */
-    public function join(string $table, string $first, string $operator, string $second, string $type = 'INNER')
+    public function join($table, $first, $operator, $second, $type = 'INNER')
     {
         $this->joins[] = sprintf('%s JOIN %s ON %s %s %s', strtoupper($type), $table, $first, $operator, $second);
         return $this;
     }
 
-    /**
-     * Add LEFT JOIN clause.
-     *
-     * @param string $table
-     * @param string $first
-     * @param string $operator
-     * @param string $second
-     * @return $this
-     */
-    public function leftJoin(string $table, string $first, string $operator, string $second)
+    public function leftJoin($table, $first, $operator, $second)
     {
         return $this->join($table, $first, $operator, $second, 'LEFT');
     }
 
-    /**
-     * Add RIGHT JOIN clause.
-     *
-     * @param string $table
-     * @param string $first
-     * @param string $operator
-     * @param string $second
-     * @return $this
-     */
-    public function rightJoin(string $table, string $first, string $operator, string $second)
+    public function rightJoin($table, $first, $operator, $second)
     {
         return $this->join($table, $first, $operator, $second, 'RIGHT');
     }
 
-    /**
-     * Add ORDER BY clause.
-     *
-     * @param string $column
-     * @param string $direction
-     * @return $this
-     */
-    public function orderBy(string $column, string $direction = 'ASC')
+    public function orderBy($column, $direction = 'ASC')
     {
         $direction = strtoupper(trim($direction)) === 'DESC' ? 'DESC' : 'ASC';
         $cleanColumn = preg_replace('/[^a-zA-Z0-9_.\`"]/', '', $column);
@@ -298,12 +149,6 @@ class QueryBuilder
         return $this;
     }
 
-    /**
-     * Add GROUP BY clause.
-     *
-     * @param string ...$columns
-     * @return $this
-     */
     public function groupBy(...$columns)
     {
         foreach ($columns as $column) {
@@ -315,15 +160,7 @@ class QueryBuilder
         return $this;
     }
 
-    /**
-     * Add HAVING clause.
-     *
-     * @param string $column
-     * @param string $operator
-     * @param mixed $value
-     * @return $this
-     */
-    public function having(string $column, string $operator, $value)
+    public function having($column, $operator, $value)
     {
         $paramKey = ':h_' . count($this->bindings);
         $this->havings[] = "{$column} {$operator} {$paramKey}";
@@ -331,36 +168,19 @@ class QueryBuilder
         return $this;
     }
 
-    /**
-     * Set LIMIT.
-     *
-     * @param int $limit
-     * @return $this
-     */
-    public function limit(int $limit)
+    public function limit($limit)
     {
         $this->limitValue = $limit;
         return $this;
     }
 
-    /**
-     * Set OFFSET.
-     *
-     * @param int $offset
-     * @return $this
-     */
-    public function offset(int $offset)
+    public function offset($offset)
     {
         $this->offsetValue = $offset;
         return $this;
     }
 
-    /**
-     * Build the WHERE SQL fragment.
-     *
-     * @return string
-     */
-    protected function buildWhereSql(): string
+    protected function buildWhereSql()
     {
         if (empty($this->wheres)) {
             return '';
@@ -386,12 +206,7 @@ class QueryBuilder
         return trim($sql);
     }
 
-    /**
-     * Generate the complete SELECT SQL string.
-     *
-     * @return string
-     */
-    public function toSql(): string
+    public function toSql()
     {
         $cols = implode(', ', $this->columns);
         $sql = "SELECT {$cols} FROM {$this->table}";
@@ -418,149 +233,80 @@ class QueryBuilder
         }
 
         if ($this->limitValue !== null) {
-            $sql .= ' LIMIT ' . (int)$this->limitValue;
+            $sql .= ' LIMIT ' . $this->limitValue;
         }
 
         if ($this->offsetValue !== null) {
-            $sql .= ' OFFSET ' . (int)$this->offsetValue;
+            $sql .= ' OFFSET ' . $this->offsetValue;
         }
 
         return trim($sql);
     }
 
-    /**
-     * Get all active bindings.
-     *
-     * @return array
-     */
-    public function getBindings(): array
+    public function getBindings()
     {
         return $this->bindings;
     }
 
-    /**
-     * Execute and get all matching records.
-     *
-     * @return array
-     */
-    public function get(): array
+    public function get()
     {
         $sql = $this->toSql();
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($this->bindings);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
     }
 
-    /**
-     * Execute and get the first matching record.
-     *
-     * @return array|null
-     */
-    public function first(): ?array
+    public function first()
     {
         $this->limit(1);
         $records = $this->get();
         return !empty($records) ? $records[0] : null;
     }
 
-    /**
-     * Find record by ID (or custom primary key).
-     *
-     * @param mixed $id
-     * @param string $primaryKey
-     * @return array|null
-     */
-    public function find($id, string $primaryKey = 'id'): ?array
+    public function find($id, $primaryKey = 'id')
     {
         return $this->where($primaryKey, $id)->first();
     }
 
-    /**
-     * Check if any matching records exist.
-     *
-     * @return bool
-     */
-    public function exists(): bool
+    public function exists()
     {
         $this->limit(1);
         return $this->first() !== null;
     }
 
-    /**
-     * Get count of matching records.
-     *
-     * @param string $column
-     * @return int
-     */
-    public function count(string $column = '*'): int
+    public function count($column = '*')
     {
-        return (int)$this->aggregate("COUNT({$column})");
+        return $this->aggregate("COUNT({$column})") ?: 0;
     }
 
-    /**
-     * Get sum of column.
-     *
-     * @param string $column
-     * @return float
-     */
-    public function sum(string $column): float
+    public function sum($column)
     {
-        return (float)$this->aggregate("SUM({$column})");
+        return $this->aggregate("SUM({$column})") ?: 0;
     }
 
-    /**
-     * Get average of column.
-     *
-     * @param string $column
-     * @return float
-     */
-    public function avg(string $column): float
+    public function avg($column)
     {
-        return (float)$this->aggregate("AVG({$column})");
+        return $this->aggregate("AVG({$column})") ?: 0;
     }
 
-    /**
-     * Get minimum of column.
-     *
-     * @param string $column
-     * @return mixed
-     */
-    public function min(string $column)
+    public function min($column)
     {
         return $this->aggregate("MIN({$column})");
     }
 
-    /**
-     * Get maximum of column.
-     *
-     * @param string $column
-     * @return mixed
-     */
-    public function max(string $column)
+    public function max($column)
     {
         return $this->aggregate("MAX({$column})");
     }
 
-    /**
-     * Helper for aggregate functions.
-     *
-     * @param string $expression
-     * @return mixed
-     */
-    protected function aggregate(string $expression)
+    protected function aggregate($expression)
     {
         $this->columns = ["{$expression} AS aggregate_value"];
         $result = $this->first();
         return $result ? $result['aggregate_value'] : null;
     }
 
-    /**
-     * Insert a new record and return last inserted ID (or row count).
-     *
-     * @param array $data
-     * @return int|string
-     */
-    public function insert(array $data)
+    public function insert($data)
     {
         if (empty($data)) {
             throw new InvalidArgumentException('Cannot insert empty data.');
@@ -596,13 +342,7 @@ class QueryBuilder
         return $this->pdo->lastInsertId() ?: $stmt->rowCount();
     }
 
-    /**
-     * Update matching records.
-     *
-     * @param array $data
-     * @return int Number of affected rows
-     */
-    public function update(array $data): int
+    public function update($data)
     {
         if (empty($data)) {
             return 0;
@@ -640,12 +380,7 @@ class QueryBuilder
         return $stmt->rowCount();
     }
 
-    /**
-     * Delete matching records.
-     *
-     * @return int Number of affected rows
-     */
-    public function delete(): int
+    public function delete()
     {
         $sql = "DELETE FROM {$this->table}";
         $whereSql = $this->buildWhereSql();

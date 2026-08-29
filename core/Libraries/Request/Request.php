@@ -6,23 +6,15 @@ use Core\Libraries\Session\Session;
 
 class Request
 {
-    /**
-     * Prevent direct instantiation.
-     */
     private function __construct()
     {
     }
 
-    /**
-     * Get HTTP request method (handles method spoofing).
-     *
-     * @return string
-     */
-    public static function method(): string
+    public static function method()
     {
         $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
         if ($method === 'POST' && isset($_POST['_method'])) {
-            $spoofed = strtoupper((string)$_POST['_method']);
+            $spoofed = strtoupper($_POST['_method']);
             if (in_array($spoofed, ['PUT', 'DELETE', 'PATCH', 'GET', 'HEAD', 'OPTIONS'], true)) {
                 return $spoofed;
             }
@@ -30,65 +22,33 @@ class Request
         return strtoupper($method);
     }
 
-    /**
-     * Check if request method is GET.
-     *
-     * @return bool
-     */
-    public static function isGet(): bool
+    public static function isGet()
     {
         return self::method() === 'GET';
     }
 
-    /**
-     * Check if request method is POST.
-     *
-     * @return bool
-     */
-    public static function isPost(): bool
+    public static function isPost()
     {
         return self::method() === 'POST';
     }
 
-    /**
-     * Check if request method is PUT.
-     *
-     * @return bool
-     */
-    public static function isPut(): bool
+    public static function isPut()
     {
         return self::method() === 'PUT';
     }
 
-    /**
-     * Check if request method is DELETE.
-     *
-     * @return bool
-     */
-    public static function isDelete(): bool
+    public static function isDelete()
     {
         return self::method() === 'DELETE';
     }
 
-    /**
-     * Check if request is AJAX.
-     *
-     * @return bool
-     */
-    public static function isAjax(): bool
+    public static function isAjax()
     {
         return isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
             strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
     }
 
-    /**
-     * Get GET query parameter or all GET parameters.
-     *
-     * @param string|null $key
-     * @param mixed $default
-     * @return mixed
-     */
-    public static function get(?string $key = null, $default = null)
+    public static function get($key = null, $default = null)
     {
         if ($key === null) {
             return $_GET;
@@ -96,14 +56,7 @@ class Request
         return $_GET[$key] ?? $default;
     }
 
-    /**
-     * Get POST parameter or all POST parameters.
-     *
-     * @param string|null $key
-     * @param mixed $default
-     * @return mixed
-     */
-    public static function post(?string $key = null, $default = null)
+    public static function post($key = null, $default = null)
     {
         if ($key === null) {
             return $_POST;
@@ -111,14 +64,7 @@ class Request
         return $_POST[$key] ?? $default;
     }
 
-    /**
-     * Get parameter from POST, GET, or JSON body.
-     *
-     * @param string|null $key
-     * @param mixed $default
-     * @return mixed
-     */
-    public static function input(?string $key = null, $default = null)
+    public static function input($key = null, $default = null)
     {
         $all = self::all();
         if ($key === null) {
@@ -127,12 +73,7 @@ class Request
         return $all[$key] ?? $default;
     }
 
-    /**
-     * Get all incoming request data merged (JSON body + POST + GET).
-     *
-     * @return array
-     */
-    public static function all(): array
+    public static function all()
     {
         $json = [];
         $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
@@ -144,13 +85,7 @@ class Request
         return array_merge($_GET, $_POST, $json);
     }
 
-    /**
-     * Get uploaded files array or specific file.
-     *
-     * @param string|null $key
-     * @return mixed
-     */
-    public static function files(?string $key = null)
+    public static function files($key = null)
     {
         if ($key === null) {
             return $_FILES;
@@ -158,34 +93,18 @@ class Request
         return $_FILES[$key] ?? null;
     }
 
-    /**
-     * Check if a file was uploaded.
-     *
-     * @param string $key
-     * @return bool
-     */
-    public static function hasFile(string $key): bool
+    public static function hasFile($key)
     {
         return isset($_FILES[$key]) && $_FILES[$key]['error'] !== UPLOAD_ERR_NO_FILE;
     }
 
-    /**
-     * Get request URI.
-     *
-     * @return string
-     */
-    public static function uri(): string
+    public static function uri()
     {
         $uri = $_SERVER['REQUEST_URI'] ?? '/';
         return parse_url($uri, PHP_URL_PATH) ?? '/';
     }
 
-    /**
-     * Get client IP address.
-     *
-     * @return string
-     */
-    public static function ip(): string
+    public static function ip()
     {
         $headers = [
             'HTTP_CLIENT_IP',
@@ -212,14 +131,7 @@ class Request
         return '127.0.0.1';
     }
 
-    /**
-     * Get request header.
-     *
-     * @param string $key
-     * @param mixed $default
-     * @return mixed
-     */
-    public static function header(string $key, $default = null)
+    public static function header($key, $default = null)
     {
         $headerKey = 'HTTP_' . strtoupper(str_replace('-', '_', $key));
         if (isset($_SERVER[$headerKey])) {
@@ -231,15 +143,9 @@ class Request
         return $default;
     }
 
-    /**
-     * Flash current input into session for old() helper.
-     *
-     * @return void
-     */
-    public static function flashInput(): void
+    public static function flashInput()
     {
         $data = self::all();
-        // Do not flash passwords
         unset($data['password'], $data['password_confirmation'], $data['_csrf_token']);
         Session::flash('_old_input', $data);
     }
