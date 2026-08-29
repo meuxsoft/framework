@@ -33,13 +33,29 @@ class Bootstrap
     {
         if (!defined('ROOT_PATH')) {
             define('ROOT_PATH', dirname(__DIR__));
+        }
+        if (!defined('APP_PATH')) {
             define('APP_PATH', ROOT_PATH . '/app');
+        }
+        if (!defined('CORE_PATH')) {
             define('CORE_PATH', ROOT_PATH . '/core');
+        }
+        if (!defined('PUBLIC_PATH')) {
             define('PUBLIC_PATH', ROOT_PATH . '/public');
+        }
+        if (!defined('STORAGE_PATH')) {
             define('STORAGE_PATH', ROOT_PATH . '/storage');
+        }
+        if (!defined('CONFIG_PATH')) {
             define('CONFIG_PATH', APP_PATH . '/Config');
+        }
+        if (!defined('VIEW_PATH')) {
             define('VIEW_PATH', APP_PATH . '/Views');
+        }
+        if (!defined('MODULES_PATH')) {
             define('MODULES_PATH', APP_PATH . '/Modules');
+        }
+        if (!defined('ROUTES_PATH')) {
             define('ROUTES_PATH', ROOT_PATH . '/routes');
         }
 
