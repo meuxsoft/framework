@@ -1,5 +1,5 @@
 -- ==========================================================
--- Meuxsoft Framework Example Database Schema
+-- Meuxsoft Framework Example Database Schema & Seed Data
 -- Compatible with MySQL 8.0+ / MariaDB & SQLite 3
 -- ==========================================================
 
@@ -15,7 +15,14 @@ CREATE TABLE IF NOT EXISTS `users` (
     INDEX `idx_users_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- SQLite Table Definition:
+-- Sample Seed Data (MySQL):
+INSERT INTO `users` (`name`, `email`, `password`, `status`) VALUES
+('Ercan Ulucan', 'ercan@meuxsoft.com.tr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1),
+('Ahmet Yılmaz', 'ahmet@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1),
+('Ayşe Demir', 'ayse@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1)
+ON DUPLICATE KEY UPDATE `name` = VALUES(`name`);
+
+-- SQLite Table Definition & Seed:
 -- CREATE TABLE IF NOT EXISTS users (
 --     id INTEGER PRIMARY KEY AUTOINCREMENT,
 --     name TEXT NOT NULL,
@@ -25,3 +32,6 @@ CREATE TABLE IF NOT EXISTS `users` (
 --     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 --     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 -- );
+-- INSERT OR IGNORE INTO users (id, name, email, password, status) VALUES
+-- (1, 'Ercan Ulucan', 'ercan@meuxsoft.com.tr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1),
+-- (2, 'Ahmet Yılmaz', 'ahmet@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1);
