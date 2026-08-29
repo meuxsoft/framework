@@ -35,7 +35,7 @@ class Database
     {
         $dbConfig = function_exists('config') ? config('database') : [];
         if (empty($dbConfig)) {
-            $configPath = defined('CONFIG_PATH') ? CONFIG_PATH . '/database.php' : dirname(__DIR__, 3) . '/app/Config/database.php';
+            $configPath = CONFIG_PATH . '/database.php';
             if (file_exists($configPath)) {
                 $dbConfig = require $configPath;
             }

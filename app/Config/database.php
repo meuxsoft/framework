@@ -12,7 +12,7 @@ return [
     'connections' => [
         'sqlite' => [
             'driver'   => 'sqlite',
-            'database' => defined('STORAGE_PATH') ? STORAGE_PATH . '/database.sqlite' : dirname(__DIR__, 2) . '/storage/database.sqlite',
+            'database' => STORAGE_PATH . '/database.sqlite',
             'prefix'   => '',
         ],
 

@@ -38,8 +38,7 @@ class Helper
         $configFile = array_shift($parts);
 
         if (!isset(self::$configCache[$configFile])) {
-            $configDir = defined('CONFIG_PATH') ? CONFIG_PATH : dirname(__DIR__, 2) . '/app/Config';
-            $configPath = $configDir . '/' . $configFile . '.php';
+            $configPath = CONFIG_PATH . '/' . $configFile . '.php';
             if (file_exists($configPath)) {
                 self::$configCache[$configFile] = require $configPath;
             } else {

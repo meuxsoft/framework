@@ -343,7 +343,7 @@ class Router
             return call_user_func(self::$notFoundHandler);
         }
 
-        if (defined('VIEW_PATH') && file_exists(VIEW_PATH . '/errors/404.php')) {
+        if (file_exists(VIEW_PATH . '/errors/404.php')) {
             return Layout::render('main', 'errors.404', ['title' => '404 - Sayfa Bulunamadı']);
         }
 

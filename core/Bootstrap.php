@@ -72,9 +72,8 @@ class Bootstrap
         // 2. Built-in PSR-4 Autoloader fallback (ensures framework works even without vendor/autoload.php)
         spl_autoload_register(function ($class) {
             $prefixes = [
-                'App\\'               => APP_PATH . '/',
-                'Core\\'              => __DIR__ . '/',
-                'Meuxsoft\\Framework\\' => __DIR__ . '/',
+                'App\\'  => APP_PATH . '/',
+                'Core\\' => CORE_PATH . '/',
             ];
 
             foreach ($prefixes as $prefix => $baseDir) {
@@ -103,7 +102,7 @@ class Bootstrap
      */
     protected static function loadHelpers(): void
     {
-        $helpersPath = __DIR__ . '/Helpers/helpers.php';
+        $helpersPath = CORE_PATH . '/Helpers/helpers.php';
         if (file_exists($helpersPath)) {
             require_once $helpersPath;
         }
@@ -163,7 +162,7 @@ class Bootstrap
      */
     protected static function logException(Throwable $e): void
     {
-        $logDir = defined('STORAGE_PATH') ? STORAGE_PATH . '/logs' : dirname(__DIR__) . '/storage/logs';
+        $logDir = STORAGE_PATH . '/logs';
         if (!is_dir($logDir)) {
             mkdir($logDir, 0777, true);
         }
@@ -352,7 +351,7 @@ HTML;
      */
     protected static function loadRoutes(): void
     {
-        $webRoutes = defined('ROUTES_PATH') ? ROUTES_PATH . '/web.php' : dirname(__DIR__) . '/routes/web.php';
+        $webRoutes = ROUTES_PATH . '/web.php';
         if (file_exists($webRoutes)) {
             Router::loadRoutes($webRoutes);
         }

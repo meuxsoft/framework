@@ -13,16 +13,6 @@ class Module
     protected static $modules = [];
 
     /**
-     * Get modules base directory path.
-     *
-     * @return string
-     */
-    public static function getModulesPath(): string
-    {
-        return defined('MODULES_PATH') ? MODULES_PATH : dirname(__DIR__, 3) . '/app/Modules';
-    }
-
-    /**
      * Prevent direct instantiation.
      */
     private function __construct()
@@ -38,7 +28,7 @@ class Module
      */
     public static function register(string $name, bool $active = true): void
     {
-        $base = self::getModulesPath();
+        $base = MODULES_PATH;
 
         self::$modules[$name] = [
             'name'      => $name,

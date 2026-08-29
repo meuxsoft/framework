@@ -163,7 +163,7 @@ class ProductController extends Controller
 
             // Remove old image if present
             if ($imagePath) {
-                $oldFullPath = (defined('PUBLIC_PATH') ? PUBLIC_PATH : dirname(__DIR__, 4) . '/public') . '/' . ltrim($imagePath, '/\\');
+                $oldFullPath = PUBLIC_PATH . '/' . ltrim($imagePath, '/\\');
                 if (file_exists($oldFullPath)) {
                     @unlink($oldFullPath);
                 }
@@ -200,7 +200,7 @@ class ProductController extends Controller
         if ($product) {
             // Delete image file
             if (!empty($product['image'])) {
-                $fullImgPath = (defined('PUBLIC_PATH') ? PUBLIC_PATH : dirname(__DIR__, 4) . '/public') . '/' . ltrim($product['image'], '/\\');
+                $fullImgPath = PUBLIC_PATH . '/' . ltrim($product['image'], '/\\');
                 if (file_exists($fullImgPath)) {
                     @unlink($fullImgPath);
                 }

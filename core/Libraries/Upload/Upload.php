@@ -221,8 +221,7 @@ class Upload
         }
 
         // Resolve absolute target directory
-        $publicDir = defined('PUBLIC_PATH') ? PUBLIC_PATH : dirname(__DIR__, 3) . '/public';
-        $targetDir = $publicDir . '/' . ltrim($this->uploadPath, '/\\');
+        $targetDir = PUBLIC_PATH . '/' . ltrim($this->uploadPath, '/\\');
 
         if (!is_dir($targetDir)) {
             if (!mkdir($targetDir, 0777, true) && !is_dir($targetDir)) {
