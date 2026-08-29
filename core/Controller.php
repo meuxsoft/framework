@@ -10,6 +10,23 @@ use Core\Libraries\Session\Session;
 class Controller
 {
     /**
+     * @var string|null
+     */
+    protected $layout = 'main';
+
+    /**
+     * Set the active layout for subsequent views.
+     *
+     * @param string|null $layout Layout name (e.g. 'main', 'auth', 'admin') or null for no layout
+     * @return $this
+     */
+    protected function setLayout(?string $layout)
+    {
+        $this->layout = $layout;
+        return $this;
+    }
+
+    /**
      * Render a view wrapped in a layout.
      *
      * @param string $view
@@ -17,9 +34,10 @@ class Controller
      * @param string|null $layout
      * @return string
      */
-    protected function view(string $view, array $data = [], ?string $layout = 'main')
+    protected function view(string $view, array $data = [], ?string $layout = null)
     {
-        return Layout::render($layout, $view, $data);
+        $resolvedLayout = $layout !== null ? $layout : $this->layout;
+        return Layout::render($resolvedLayout, $view, $data);
     }
 
     /**
